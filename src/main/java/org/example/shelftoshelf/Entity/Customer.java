@@ -34,6 +34,8 @@ public class Customer {
         private String password;
 
 
+        private boolean verified;
+
         @Enumerated(EnumType.STRING)
         private CustomerRole role;
         private String storeName;

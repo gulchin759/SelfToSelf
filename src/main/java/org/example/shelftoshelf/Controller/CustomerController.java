@@ -24,6 +24,13 @@ public class CustomerController {
 
         return customerService.createAccount(requestDto);
     }
+    @PostMapping("/verify-otp")
+    public CustomerProfileResponseDto verifyOtp(
+            @RequestParam String email,
+            @RequestParam String otp) {
+
+        return customerService.verifyOtp(email, otp);
+    }
 
     // Öz profilini görür
     @GetMapping("/{id}/profile")
