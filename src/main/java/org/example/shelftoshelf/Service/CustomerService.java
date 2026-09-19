@@ -23,13 +23,13 @@ public class CustomerService {
     private final CustomerRepo customerRepo;
     private  final BookRepo bookRepo;
     private  final BookMaper bookMaper;
-    private final OtpService otpService;
-    public CustomerService(CustomerMapper customerMapper, CustomerRepo customerRepo,BookRepo bookRepo,BookMaper bookMaper,OtpService otpService) {
+
+    public CustomerService(CustomerMapper customerMapper, CustomerRepo customerRepo,BookRepo bookRepo,BookMaper bookMaper) {
         this.customerMapper = customerMapper;
         this.customerRepo = customerRepo;
         this.bookRepo=bookRepo;
         this.bookMaper=bookMaper;
-        this.otpService=otpService;
+
     }
 
 //user ucun
@@ -38,33 +38,9 @@ public class CustomerService {
         customer.setRole(CustomerRole.USER);
         customer.setVerified(false);
         Customer savedCustomer=customerRepo.save(customer);
-        otpService.sendOtp(savedCustomer.getEmail());
+
         return  customerMapper.toCustomerProfileResponseDto(savedCustomer);
     }
-
-
-    public CustomerProfileResponseDto verifyOtp(
-            String email,
-            String otp) {
-
-        boolean correct = otpService.verifyOtp(email, otp);
-
-        if (!correct) {
-            throw new RuntimeException("OTP kodu yanlışdır");
-        }
-
-        Customer customer = customerRepo.findByEmail(email)
-                .orElseThrow(() ->
-                        new CustomerNotFoundException(
-                                "İstifadəçi tapılmadı"));
-
-        customer.setVerified(true);
-
-        Customer savedCustomer = customerRepo.save(customer);
-
-        return customerMapper.toCustomerProfileResponseDto(savedCustomer);
-    }
-
 
 
 //herenin oz profili
