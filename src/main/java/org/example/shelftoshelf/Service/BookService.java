@@ -66,13 +66,20 @@ public class BookService {
         return bookMaper.toResponseDto(savedBook);
     }
 
-    public List<BookResponseDto> searchBooks(String title, Genre genre, Language language, BookCondition condition, BookSortField sortBy, SortDirection direction) {
-        Specification<Book> bookSpecification = Specification.where((Specification<Book>) null);
+    public List<BookResponseDto> searchBooks(String title, Genre genre, Language language,
+                                             BookCondition condition, BookSortField sortBy,
+                                             SortDirection direction) {
+
+        Specification<Book> bookSpecification =
+                (root, query, cb) -> cb.conjunction();
 
         if (title != null && !title.isBlank()) {
             bookSpecification = bookSpecification.and(
                     (root, query, cb) ->
-                            cb.like(cb.lower(root.get("title")), "%" + title.toLowerCase() + "%")
+                            cb.like(
+                                    cb.lower(root.get("title")),
+                                    "%" + title.toLowerCase() + "%"
+                            )
             );
         }
 
@@ -98,6 +105,7 @@ public class BookService {
         }
 
         Sort sort = Sort.unsorted();
+
         if (sortBy != null) {
             String field = switch (sortBy) {
                 case PRICE -> "price";
@@ -107,21 +115,18 @@ public class BookService {
             Sort.Direction sortDirection = direction == SortDirection.DESC
                     ? Sort.Direction.DESC
                     : Sort.Direction.ASC;
+
             sort = Sort.by(sortDirection, field);
         }
 
-        List<Book> books = bookRepo.findAll(bookSpecification, sort);
 
-        if (books.isEmpty()) {
-            throw new BookNotFoundException("Axtarışa uyğun kitab tapılmadı");
-        }
+
+        List<Book> books = bookRepo.findAll(bookSpecification, sort);
 
         return books.stream()
                 .map(bookMaper::toResponseDto)
                 .toList();
     }
-
-
 
 
 

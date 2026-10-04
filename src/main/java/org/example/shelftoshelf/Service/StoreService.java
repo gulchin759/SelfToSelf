@@ -19,17 +19,43 @@ public class StoreService {
     private final StoreMapper storeMapper;
     private final StoreRepo storeRepo;
     private final BookMaper bookMaper;
+    private final OtpService otpService;
 
-    public StoreService(StoreMapper storeMapper, StoreRepo storeRepo,BookMaper bookMaper) {
+    public StoreService(StoreMapper storeMapper,
+                        StoreRepo storeRepo,
+                        BookMaper bookMaper,
+                        OtpService otpService) {
+
         this.storeMapper = storeMapper;
         this.storeRepo = storeRepo;
-        this.bookMaper=bookMaper;
+        this.bookMaper = bookMaper;
+        this.otpService = otpService;
     }
 
 
     public StoreProfileResponceDto createStore(StoreRequestDto requestDto) {
         Store store = storeMapper.toEntity(requestDto);
         Store savedStore = storeRepo.save(store);
+        return storeMapper.toStoreProfileResponceDto(savedStore);
+    }
+
+    public StoreProfileResponceDto verifyOtp(String email, String otp) {
+
+        boolean correct = otpService.verifyOtp(email, otp);
+
+        if (!correct) {
+            throw new RuntimeException("OTP kodu yanlışdır");
+        }
+
+        Store store = storeRepo.findByEmail(email)
+                .orElseThrow(() ->
+                        new StoreNotFoundException("Magaza tapilmadi"));
+
+
+        store.setVerified(true);
+
+        Store savedStore = storeRepo.save(store);
+
         return storeMapper.toStoreProfileResponceDto(savedStore);
     }
 
@@ -58,18 +84,15 @@ public class StoreService {
     }
 
 
-    public StoreProfileResponceDto updateStore(Long id,StoreRequestDto requestDto){
-        Store storeOld=storeMapper.toEntity(requestDto);
-        Store newStore=storeRepo.findById(id).orElseThrow(() -> new StoreNotFoundException("Magaza tapilmadi"));
+    public StoreProfileResponceDto updateStore(Long id, StoreRequestDto requestDto) {
+        Store store = storeRepo.findById(id).orElseThrow(() -> new StoreNotFoundException("Magaza tapilmadi"));
+        store.setName(requestDto.getName());
+        store.setLocation(requestDto.getLocation());
+        store.setPhone(requestDto.getPhone());
+        store.setEmail(requestDto.getEmail());
+        store.setPassword(requestDto.getPassword());
 
-        newStore.setBooks(storeOld.getBooks());
-        newStore.setEmail(storeOld.getEmail());
-        newStore.setName(storeOld.getName());
-        newStore.setPhone(storeOld.getPhone());
-        newStore.setPassword(storeOld.getPassword());
-
-        Store savedStore = storeRepo.save(newStore);
-        return  storeMapper.toStoreProfileResponceDto(savedStore);
+        return storeMapper.toStoreProfileResponceDto(storeRepo.save(store));
     }
 
     public void deleteStore(Long id) {

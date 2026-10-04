@@ -14,7 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 
 public class CustomerPublicResponseDto {
-    private Long id;
+
     private String name;
     private String surname;
     private List<BookResponseDto> books;

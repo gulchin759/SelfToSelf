@@ -26,6 +26,7 @@ public class Store {
     private String phone;
     private  String email;
     private  String password;
+    private boolean verified;
 
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Book> books = new ArrayList<>();

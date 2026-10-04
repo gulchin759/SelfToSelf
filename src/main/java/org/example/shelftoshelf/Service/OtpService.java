@@ -19,9 +19,15 @@ public class OtpService {
         this.emailService = emailService;
     }
 
-    public void sendOtp(String email) {String otp = String.format("%06d",new Random().nextInt(1000000));
+    public void sendOtp(String email) {
 
-        OtpVerification verification = otpVerificationRepo.findByEmail(email).orElse(new OtpVerification());
+        String otp = String.format(
+                "%06d",
+                new Random().nextInt(1000000)
+        );
+
+        OtpVerification verification = new OtpVerification();
+
         verification.setEmail(email);
         verification.setOtp(otp);
         verification.setExpiresAt(
@@ -29,28 +35,25 @@ public class OtpService {
         );
 
         otpVerificationRepo.save(verification);
+
         emailService.sendOtp(email, otp);
     }
 
-    public boolean verifyOtp(String email, String otp) {
+    public boolean verifyOtp(String email, String code) {
 
-        OtpVerification verification =
-                otpVerificationRepo.findByEmail(email)
-                        .orElseThrow(() ->
-                                new RuntimeException("OTP tapılmadı"));
+        OtpVerification otp = otpVerificationRepo
+                .findTopByEmailOrderByIdDesc(email)
+                .orElseThrow(() -> new RuntimeException("OTP tapılmadı"));
 
-        if (verification.getExpiresAt()
-                .isBefore(LocalDateTime.now())) {
-
-            throw new RuntimeException("OTP-nin vaxtı bitib");
+        if (otp.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("OTP-nin müddəti bitib");
         }
 
-        if (!verification.getOtp().equals(otp)) {
-
+        if (!otp.getOtp().equals(code)) {
             return false;
         }
 
-        otpVerificationRepo.delete(verification);
+        otpVerificationRepo.deleteById(otp.getId());
 
         return true;
     }

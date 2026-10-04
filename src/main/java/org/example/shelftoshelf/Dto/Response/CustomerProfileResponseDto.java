@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.example.shelftoshelf.Entity.Book;
 
+import javax.management.relation.Role;
 import java.util.List;
 
 @Getter
@@ -19,6 +20,7 @@ public class CustomerProfileResponseDto {
     private String email;
     private String phone;
     private List<Book> books;
+    private Role role;
 
     public void setBooks(List<BookResponseDto> list) {
 

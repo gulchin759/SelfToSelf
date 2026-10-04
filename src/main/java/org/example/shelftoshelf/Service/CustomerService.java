@@ -33,14 +33,22 @@ public class CustomerService {
     }
 
 //user ucun
-    public CustomerProfileResponseDto createAccount(CustomerRequestDto requestDto){
-        Customer customer=customerMapper.toEntity(requestDto);
-        customer.setRole(CustomerRole.USER);
-        customer.setVerified(false);
-        Customer savedCustomer=customerRepo.save(customer);
-        otpService.sendOtp(savedCustomer.getEmail());
-        return  customerMapper.toCustomerProfileResponseDto(savedCustomer);
+public CustomerProfileResponseDto createAccount(CustomerRequestDto requestDto) {
+
+    if (customerRepo.findByEmail(requestDto.getEmail()).isPresent()) {
+        throw new RuntimeException("Bu email artıq qeydiyyatdan keçib");
     }
+
+    Customer customer = customerMapper.toEntity(requestDto);
+    customer.setRole(CustomerRole.USER);
+    customer.setVerified(false);
+
+    Customer savedCustomer = customerRepo.save(customer);
+
+    otpService.sendOtp(savedCustomer.getEmail());
+
+    return customerMapper.toCustomerProfileResponseDto(savedCustomer);
+}
 
 
     public CustomerProfileResponseDto verifyOtp(
