@@ -49,6 +49,9 @@ public class Customer {
         @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL, orphanRemoval = true)
         private List<Book> books = new ArrayList<>();
 
+        @ElementCollection(fetch = FetchType.EAGER)
+        private java.util.Set<Long> favoriteBookIds = new java.util.HashSet<>();
+
 
 
 

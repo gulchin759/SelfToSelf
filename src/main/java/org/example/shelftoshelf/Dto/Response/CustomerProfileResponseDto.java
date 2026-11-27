@@ -4,10 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.example.shelftoshelf.Entity.Book;
+import org.example.shelftoshelf.Entity.Enum.CustomerRole;
 
-import javax.management.relation.Role;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -19,10 +21,8 @@ public class CustomerProfileResponseDto {
     private String surname;
     private String email;
     private String phone;
-    private List<Book> books;
-    private Role role;
-
-    public void setBooks(List<BookResponseDto> list) {
-
-    }
+    private CustomerRole role;
+    private Integer bookCount;
+    private List<BookResponseDto> books = new ArrayList<>();
+    private Set<Long> favoriteBookIds = new HashSet<>();
 }

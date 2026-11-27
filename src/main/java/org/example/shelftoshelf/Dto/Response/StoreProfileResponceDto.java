@@ -1,15 +1,12 @@
 package org.example.shelftoshelf.Dto.Response;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.OneToMany;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.example.shelftoshelf.Entity.Book;
 
 import java.util.ArrayList;
 import java.util.List;
-
 
 @Getter
 @Setter
@@ -21,10 +18,8 @@ public class StoreProfileResponceDto {
     private String name;
     private String location;
     private String phone;
-    private  String email;
-    private  String password;
-    private List<Book> books ;
-
-    public void setBooks(List<BookResponseDto> list) {
-    }
+    private String email;
+    private boolean verified;
+    private Integer bookCount;
+    private List<BookResponseDto> books = new ArrayList<>();
 }

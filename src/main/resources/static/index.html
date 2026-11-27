@@ -1,0 +1,2479 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShelfToShelf | Kitab və Ədəbiyyat Platforması</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts: Playfair Display & Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;0,900;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome 6 Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        serif: ['"Playfair Display"', 'Georgia', 'serif'],
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        paper: {
+                            50: '#fdfbf7',
+                            100: '#f7f2e7',
+                            200: '#ede3cf',
+                            300: '#dfcfb1',
+                            400: '#cbb68f',
+                            500: '#b59b6f',
+                            800: '#4a3b2c',
+                            900: '#2c2219'
+                        },
+                        leather: {
+                            700: '#4a2c1b',
+                            800: '#341d11',
+                            900: '#22120a',
+                            950: '#140a05'
+                        },
+                        ambergold: {
+                            400: '#f59e0b',
+                            500: '#d97706',
+                            600: '#b45309',
+                            700: '#92400e',
+                            800: '#78350f'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #fbf9f4;
+            color: #2c2219;
+            background-image: radial-gradient(#ede3cf 0.75px, transparent 0.75px);
+            background-size: 24px 24px;
+        }
+
+        .font-book {
+            font-family: 'Playfair Display', Georgia, serif;
+        }
+
+        /* 3D Kitab Üzlüyü Effekti */
+        .book-cover-3d {
+            position: relative;
+            border-radius: 3px 10px 10px 3px;
+            box-shadow: -4px 6px 16px -2px rgba(44, 34, 25, 0.35), 0 2px 4px rgba(0,0,0,0.08);
+            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow: hidden;
+        }
+
+        .book-cover-3d::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 12px;
+            background: linear-gradient(to right, rgba(0,0,0,0.35) 0%, rgba(255,255,255,0.2) 25%, rgba(0,0,0,0.15) 100%);
+            border-radius: 3px 0 0 3px;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .book-card:hover .book-cover-3d {
+            transform: translateY(-8px) scale(1.03) rotate(-1deg);
+            box-shadow: -10px 20px 32px -4px rgba(44, 34, 25, 0.45), 0 8px 12px rgba(0,0,0,0.12);
+        }
+
+        /* Qızılı və Dəri Qradiyentlər */
+        .book-gold-gradient {
+            background: linear-gradient(135deg, #d97706 0%, #b45309 50%, #78350f 100%);
+        }
+
+        .book-leather-gradient {
+            background: linear-gradient(145deg, #341d11 0%, #22120a 100%);
+        }
+
+        @keyframes floatBook {
+            0%, 100% { transform: translateY(0px) rotate(-1deg); }
+            50% { transform: translateY(-8px) rotate(1deg); }
+        }
+
+        .animate-float {
+            animation: floatBook 5s ease-in-out infinite;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #d4a373;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f7f2e7;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-amber-200 selection:text-amber-950">
+
+    <!-- Bildirişlər -->
+    <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col space-y-3 pointer-events-none"></div>
+
+    <!-- ======================= BAŞLIQ VƏ NAVİQASİYA ======================= -->
+    <header class="sticky top-0 z-40 bg-[#fbf9f4]/95 backdrop-blur-md border-b border-paper-200 shadow-sm transition-all">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+
+                <!-- Loqo -->
+                <div class="flex items-center space-x-3 cursor-pointer group" onclick="handleBrandLogoClick()">
+                    <div class="w-12 h-12 rounded-xl book-leather-gradient flex items-center justify-center text-amber-400 shadow-md border border-amber-600/30 group-hover:rotate-[-4deg] transition-transform">
+                        <i class="fa-solid fa-book-bookmark text-2xl"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-1.5 leading-none">
+                            <span class="font-book text-2xl font-black tracking-tight text-leather-900">Shelf</span>
+                            <span class="font-book text-2xl font-black text-amber-600">To</span>
+                            <span class="font-book text-2xl font-black tracking-tight text-leather-900">Shelf</span>
+                        </div>
+                        <span class="block text-[10px] font-bold text-amber-700 tracking-widest uppercase mt-0.5">Ağıllı Kitab Birjası</span>
+                    </div>
+                </div>
+
+                <!-- Naviqasiya Menyu Düymələri -->
+                <nav class="hidden md:flex items-center space-x-1">
+                    <!-- Giriş Portalı (Qonaq üçün) -->
+                    <button onclick="navigateTo('welcomePortal')" id="navWelcomePortal" class="px-3.5 py-2 rounded-xl text-xs font-bold text-leather-900 bg-amber-100/70 hover:bg-amber-200 transition">
+                        <i class="fa-solid fa-door-open mr-1.5 text-amber-700"></i>Giriş Portalı
+                    </button>
+
+                    <!-- Kitab Kataloqu (USER və Qonaq üçün) -->
+                    <button onclick="navigateTo('catalog')" id="navCatalog" class="px-3.5 py-2 rounded-xl text-xs font-bold text-leather-900 hover:text-amber-700 hover:bg-paper-100 transition">
+                        <i class="fa-solid fa-books mr-1.5 text-amber-600"></i>Kitab Kataloqu
+                    </button>
+
+                    <!-- Kitab Mağazaları (USER və Qonaq üçün) -->
+                    <button onclick="navigateTo('stores')" id="navStores" class="px-3.5 py-2 rounded-xl text-xs font-bold text-leather-900 hover:text-amber-700 hover:bg-paper-100 transition">
+                        <i class="fa-solid fa-shop mr-1.5 text-amber-700"></i>Kitab Mağazaları
+                    </button>
+
+                    <!-- Mənim Elanlarım (Yalnız USER üçün) -->
+                    <button onclick="navigateTo('myBooks')" id="navMyBooks" class="hidden px-3.5 py-2 rounded-xl text-xs font-bold text-leather-900 hover:text-amber-700 hover:bg-paper-100 transition">
+                        <i class="fa-solid fa-rectangle-list mr-1.5 text-amber-600"></i>Mənim Elanlarım
+                    </button>
+
+                    <!-- Sevimlilər (Yalnız USER üçün) -->
+                    <button onclick="navigateTo('wishlist')" id="navWishlist" class="hidden px-3.5 py-2 rounded-xl text-xs font-bold text-leather-900 hover:text-rose-700 hover:bg-rose-50 transition">
+                        <i class="fa-solid fa-heart mr-1.5 text-rose-600"></i>Sevimlilər
+                        <span id="wishlistNavCount" class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-rose-600 text-white font-black">0</span>
+                    </button>
+
+                    <!-- YALNIZ MAĞAZA ÜÇÜN: Mağazam və Kitablarım (Digər heç nə görmür) -->
+                    <button onclick="navigateTo('storeDashboard')" id="navStoreDashboard" class="hidden px-4 py-2 rounded-xl text-xs font-black text-amber-950 bg-amber-200 border border-amber-300 hover:bg-amber-300 transition">
+                        <i class="fa-solid fa-store mr-1.5 text-amber-800"></i>Mağazam və Kitablarım
+                    </button>
+
+                    <!-- YALNIZ ADMIN ÜÇÜN: İdarəetmə Paneli -->
+                    <button onclick="navigateTo('admin')" id="navAdmin" class="hidden px-4 py-2 rounded-xl text-xs font-black text-amber-950 bg-amber-200 border border-amber-400 hover:bg-amber-300 transition">
+                        <i class="fa-solid fa-crown mr-1.5 text-amber-800"></i>Admin İdarəetmə Paneli
+                    </button>
+                </nav>
+
+                <!-- Sağ Tərəf: Profil və Əməliyyatlar -->
+                <div class="flex items-center space-x-3">
+                    <!-- Qonaq Düymələri -->
+                    <div id="guestActions" class="flex items-center space-x-2">
+                        <button onclick="navigateTo('welcomePortal')" class="px-4 py-2.5 rounded-xl text-xs font-black text-leather-900 bg-white border border-paper-300 hover:bg-paper-100 transition shadow-sm">
+                            <i class="fa-solid fa-arrow-right-to-bracket mr-1.5 text-amber-600"></i>Giriş
+                        </button>
+                        <button onclick="openRegisterModal()" class="px-4 py-2.5 rounded-xl text-xs font-black text-white book-gold-gradient hover:opacity-95 shadow-md shadow-amber-700/20 transition">
+                            <i class="fa-solid fa-user-plus mr-1.5"></i>Qeydiyyat
+                        </button>
+                    </div>
+
+                    <!-- Daxil Olmuş İstifadəçi Menyu -->
+                    <div id="userMenu" class="hidden flex items-center space-x-3">
+                        <!-- Yeni Kitab Elanı (USER və STORE üçün) -->
+                        <button onclick="openAddBookModal()" id="quickAddBookBtn" class="flex items-center px-4 py-2.5 rounded-xl text-xs font-black text-white book-gold-gradient hover:opacity-95 shadow-md shadow-amber-800/20 transition">
+                            <i class="fa-solid fa-plus-circle mr-1.5"></i>Yeni Elan
+                        </button>
+
+                        <!-- Profil Düyməsi -->
+                        <button onclick="openProfileSection()" title="Məlumatlar" class="flex items-center space-x-2.5 bg-white pl-3 pr-2 py-1.5 rounded-2xl border border-paper-300 hover:border-amber-500 shadow-sm transition cursor-pointer">
+                            <div class="flex flex-col text-right">
+                                <span id="userNameDisplay" class="text-xs font-bold text-leather-900 leading-tight">İstifadəçi</span>
+                                <span id="userRoleBadge" class="text-[9px] font-black text-amber-700 uppercase tracking-wider">İSTİFADƏÇİ</span>
+                            </div>
+                            <div class="w-8 h-8 rounded-xl book-leather-gradient text-amber-400 flex items-center justify-center font-black text-xs shadow-inner">
+                                <span id="userAvatarLetter">U</span>
+                            </div>
+                        </button>
+
+                        <!-- Çıxış -->
+                        <button onclick="logout()" title="Çıxış" class="w-9 h-9 rounded-xl flex items-center justify-center text-paper-800 hover:text-rose-700 hover:bg-rose-50 border border-paper-300 transition">
+                            <i class="fa-solid fa-power-off text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </header>
+
+    <!-- ======================= ƏSAS MƏZMUN (MAIN) ======================= -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- ======================= BÖLMƏ 0: GİRİŞ PORTALI (ŞƏKİLLİ, VAHİD GİRİŞ) ======================= -->
+        <!-- İstifadəçi, Mağaza və Admin üçün bir dənə tək giriş yeri! -->
+        <section id="sectionWelcomePortal" class="space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-white rounded-3xl p-6 sm:p-10 border border-paper-200 shadow-xl overflow-hidden relative">
+                
+                <!-- Sol Tərəf: Şəkillər və 3D Kitablar (Uzun yazılar yoxdur!) -->
+                <div class="lg:col-span-7 space-y-6">
+                    <div class="flex items-center space-x-2">
+                        <span class="px-3.5 py-1 rounded-full text-xs font-black bg-amber-100 text-amber-900 border border-amber-300 flex items-center gap-1.5">
+                            <i class="fa-solid fa-sparkles text-amber-600"></i> Ağıllı Kitab Birjası
+                        </span>
+                        <span class="text-xs font-bold text-paper-500">Bakı, Sumqayıt, Gəncə</span>
+                    </div>
+
+                    <h1 class="font-book text-3xl sm:text-5xl font-black text-leather-900 leading-tight">
+                        Kitabları Kəşf Et, Satışa Qoy və <span class="italic text-amber-700">Oxu!</span>
+                    </h1>
+
+                    <!-- Şəkillər Qalereyası (Sözdən çox şəkillər) -->
+                    <div class="grid grid-cols-3 gap-3 pt-1">
+                        <div class="text-center group cursor-pointer" onclick="navigateTo('catalog')">
+                            <div class="book-cover-3d h-44 sm:h-52 rounded-xl bg-slate-800 relative">
+                                <img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=600&q=80" alt="1984" class="w-full h-full object-cover">
+                                <span class="absolute bottom-2 left-2 right-2 px-2 py-0.5 rounded-md text-[11px] font-black bg-leather-900/90 text-amber-300 backdrop-blur-sm shadow">14.50 ₼</span>
+                            </div>
+                            <span class="block text-xs font-bold text-leather-900 mt-2 truncate">1984</span>
+                        </div>
+
+                        <div class="text-center group cursor-pointer" onclick="navigateTo('catalog')">
+                            <div class="book-cover-3d h-44 sm:h-52 rounded-xl bg-slate-800 relative">
+                                <img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=600&q=80" alt="Cinayət və Cəza" class="w-full h-full object-cover">
+                                <span class="absolute bottom-2 left-2 right-2 px-2 py-0.5 rounded-md text-[11px] font-black bg-leather-900/90 text-amber-300 backdrop-blur-sm shadow">18.00 ₼</span>
+                            </div>
+                            <span class="block text-xs font-bold text-leather-900 mt-2 truncate">Cinayət və Cəza</span>
+                        </div>
+
+                        <div class="text-center group cursor-pointer" onclick="navigateTo('catalog')">
+                            <div class="book-cover-3d h-44 sm:h-52 rounded-xl bg-slate-800 relative">
+                                <img src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&w=600&q=80" alt="Səfillər" class="w-full h-full object-cover">
+                                <span class="absolute bottom-2 left-2 right-2 px-2 py-0.5 rounded-md text-[11px] font-black bg-leather-900/90 text-amber-300 backdrop-blur-sm shadow">25.00 ₼</span>
+                            </div>
+                            <span class="block text-xs font-bold text-leather-900 mt-2 truncate">Səfillər</span>
+                        </div>
+                    </div>
+
+                    <!-- Kataloqa Qonaq Baxış Keçidi -->
+                    <div class="pt-2 flex items-center justify-between">
+                        <button onclick="navigateTo('catalog')" class="inline-flex items-center space-x-2 text-xs font-black text-amber-800 hover:text-amber-950 underline decoration-amber-500 underline-offset-4 transition">
+                            <i class="fa-solid fa-arrow-right"></i>
+                            <span>Daxil olmadan birbaşa bütün kitablara bax</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Sağ Tərəf: VAHİD GİRİŞ FORMU (Admin, Mağaza və İstifadəçi üçün bir dənə giriş yeri!) -->
+                <div class="lg:col-span-5 bg-[#fbf9f4] rounded-2xl p-6 sm:p-8 border border-paper-300 shadow-md">
+                    <div class="text-center mb-5">
+                        <div class="w-12 h-12 rounded-2xl book-gold-gradient text-white flex items-center justify-center mx-auto mb-2 text-xl font-bold shadow-md shadow-amber-700/20">
+                            <i class="fa-solid fa-key"></i>
+                        </div>
+                        <h2 class="font-book text-2xl font-bold text-leather-900">Hesaba Giriş</h2>
+                        <p class="text-xs text-paper-800 mt-1">E-poçt və şifrənizi yazaraq birbaşa daxil olun</p>
+                    </div>
+
+                    <!-- Tək Vahid Giriş Formu -->
+                    <form onsubmit="handlePortalLogin(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-leather-900 uppercase mb-1">E-poçt Ünvanı</label>
+                            <div class="relative">
+                                <input type="email" id="portalEmail" required placeholder="adiniz@example.com"
+                                       class="w-full px-4 py-3 bg-white border border-paper-300 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500 transition">
+                                <i class="fa-solid fa-envelope absolute right-3.5 top-1/2 -translate-y-1/2 text-paper-400 text-xs"></i>
+                            </div>
+                        </div>
+
+                        <!-- Şifrə (Göz ikonu 👁️ ilə) -->
+                        <div>
+                            <label class="block text-xs font-bold text-leather-900 uppercase mb-1">Şifrə</label>
+                            <div class="relative">
+                                <input type="password" id="portalPassword" required placeholder="••••••••"
+                                       class="w-full px-4 py-3 pr-10 bg-white border border-paper-300 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500 transition">
+                                <button type="button" onclick="togglePasswordVisibility('portalPassword', 'portalPasswordEye')" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-paper-500 hover:text-amber-700 transition">
+                                    <i id="portalPasswordEye" class="fa-solid fa-eye text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <button type="submit" id="portalSubmitBtn" class="w-full py-3.5 rounded-xl book-gold-gradient text-white font-black text-xs shadow-md shadow-amber-800/20 hover:opacity-95 transition">
+                            Daxil Ol
+                        </button>
+                    </form>
+
+                    <!-- Sürətli Test Girişləri (Bir kliklə doldurur: Admin, Mağaza, İstifadəçi) -->
+                    <div class="mt-4 p-3 bg-white rounded-xl border border-paper-200 space-y-2">
+                        <span class="text-[10px] font-black uppercase text-paper-500 tracking-wider block text-center">Sürətli Giriş Test Seçimləri</span>
+                        <div class="grid grid-cols-3 gap-1.5 text-center">
+                            <button type="button" onclick="fillPortalCredentials('admin@shelftoshelf.com', 'admin123')" class="px-2 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-[11px] font-bold text-amber-900 border border-amber-200 transition">
+                                👑 Admin
+                            </button>
+                            <button type="button" onclick="fillPortalCredentials('kitabevi@shelftoshelf.com', 'store123')" class="px-2 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-[11px] font-bold text-amber-900 border border-amber-200 transition">
+                                🏪 Mağaza
+                            </button>
+                            <button type="button" onclick="fillPortalCredentials('user@shelftoshelf.com', 'user123')" class="px-2 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-[11px] font-bold text-amber-900 border border-amber-200 transition">
+                                👤 İstifadəçi
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Qeydiyyat və Əlaqə -->
+                    <div class="mt-5 pt-4 border-t border-paper-300 space-y-3 text-center text-xs">
+                        <div>
+                            Hesabınız yoxdur? 
+                            <button onclick="openRegisterModal()" class="text-amber-800 hover:text-amber-950 font-black underline ml-1">
+                                Qeydiyyatdan keçin
+                            </button>
+                        </div>
+
+                        <!-- Mağaza Açmaq İstəyənlər Üçün Qısa Əlaqə -->
+                        <div class="p-2.5 rounded-xl bg-amber-50/70 border border-amber-200 text-left text-[11px] text-leather-900">
+                            <b>Mağaza açmaq istəyirsiniz?</b> Admin ilə əlaqə saxlayın:
+                            <span class="font-bold text-emerald-700 ml-1">WhatsApp: +994 50 123 45 67</span>
+                        </div>
+
+                        <!-- OTP Kodu Təsdiqləmə -->
+                        <div>
+                            OTP kodunuz var? 
+                            <button onclick="openDirectOtpModal()" class="text-amber-800 hover:text-amber-950 font-bold underline ml-1">
+                                Kodu daxil edin
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- ======================= BÖLMƏ 1: BÜTÜN KİTABLAR KATALOQU ======================= -->
+        <section id="sectionCatalog" class="hidden space-y-6">
+            <!-- Kitab Görünüşlü Hero Banner -->
+            <div class="relative overflow-hidden rounded-3xl book-leather-gradient p-8 text-white shadow-xl">
+                <div class="relative z-10 max-w-2xl space-y-2">
+                    <span class="inline-flex items-center gap-1.5 py-1 px-3 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                        <i class="fa-solid fa-sparkles"></i> Turbo.az Üslubunda Kitab Bazarı
+                    </span>
+                    <h2 class="font-book text-3xl font-black tracking-tight leading-tight">
+                        Axtardığın Kitabı <span class="italic text-amber-400">Sürətlə Tap</span> və Razılaş!
+                    </h2>
+                </div>
+            </div>
+
+            <!-- Filtrlər Zolağı (100% Azərbaycan Dilində) -->
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-paper-200 space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                    <!-- Axtarış -->
+                    <div>
+                        <label class="block text-[11px] font-bold text-paper-800 uppercase mb-1">Kitab və ya Müəllif</label>
+                        <div class="relative">
+                            <input type="text" id="filterSearch" oninput="applyFilters()" placeholder="Kitabın adını yazın..."
+                                   class="w-full px-3.5 py-2.5 bg-[#fbf9f4] border border-paper-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-amber-500 transition">
+                            <i class="fa-solid fa-magnifying-glass absolute right-3 top-1/2 -translate-y-1/2 text-paper-400 text-xs"></i>
+                        </div>
+                    </div>
+
+                    <!-- Janr (Azərbaycan Dilində) -->
+                    <div>
+                        <label class="block text-[11px] font-bold text-paper-800 uppercase mb-1">Janr</label>
+                        <select id="filterGenre" onchange="applyFilters()" class="w-full px-3.5 py-2.5 bg-[#fbf9f4] border border-paper-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-amber-500 transition">
+                            <option value="">Bütün Janrlar</option>
+                            <option value="FICTION">Bədii Ədəbiyyat</option>
+                            <option value="DRAMA">Dram Əsərləri</option>
+                            <option value="HISTORY">Tarixi Əsərlər</option>
+                            <option value="SCIENCE">Elmi Ədəbiyyat</option>
+                            <option value="FANTASY">Fantastika</option>
+                            <option value="POETRY">Şeir və Qəzəllər</option>
+                        </select>
+                    </div>
+
+                    <!-- Vəziyyət (Azərbaycan Dilində) -->
+                    <div>
+                        <label class="block text-[11px] font-bold text-paper-800 uppercase mb-1">Kitabın Vəziyyəti</label>
+                        <select id="filterCondition" onchange="applyFilters()" class="w-full px-3.5 py-2.5 bg-[#fbf9f4] border border-paper-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-amber-500 transition">
+                            <option value="">Bütün Vəziyyətlər</option>
+                            <option value="NEW">Tamamilə Yeni</option>
+                            <option value="LIKE_NEW">Yeni Kimi (Əla)</option>
+                            <option value="GOOD">Yaxşı Vəziyyətdə</option>
+                            <option value="ACCEPTABLE">Orta Vəziyyətdə</option>
+                        </select>
+                    </div>
+
+                    <!-- Sıralama -->
+                    <div>
+                        <label class="block text-[11px] font-bold text-paper-800 uppercase mb-1">Sıralama</label>
+                        <select id="filterSort" onchange="applyFilters()" class="w-full px-3.5 py-2.5 bg-[#fbf9f4] border border-paper-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-amber-500 transition">
+                            <option value="newest">Ən Yenilər</option>
+                            <option value="priceAsc">Qiymət: Ucuzdan Bahaya</option>
+                            <option value="priceDesc">Qiymət: Bahadan Ucuza</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-paper-200 text-xs">
+                    <div class="flex items-center space-x-4">
+                        <label class="inline-flex items-center space-x-1.5 cursor-pointer">
+                            <input type="checkbox" id="filterNegotiable" onchange="applyFilters()" class="rounded text-amber-600 focus:ring-amber-500 w-4 h-4">
+                            <span class="font-bold text-leather-900">Qiymətdə razılaşma var</span>
+                        </label>
+                        <label class="inline-flex items-center space-x-1.5 cursor-pointer">
+                            <input type="checkbox" id="filterDelivery" onchange="applyFilters()" class="rounded text-amber-600 focus:ring-amber-500 w-4 h-4">
+                            <span class="font-bold text-leather-900">Çatdırılma var</span>
+                        </label>
+                    </div>
+                    <div class="text-paper-800 font-bold">
+                        Tapılan Elanlar: <span id="booksCountBadge" class="text-amber-800 font-black">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Əsas Kitab Qalereyası (Şəkillər Zəngindir) -->
+            <div id="booksGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <!-- Kitab kartları bura yüklənir -->
+            </div>
+
+            <div id="emptyCatalogState" class="hidden text-center py-16 bg-white rounded-3xl border border-paper-200 p-8 space-y-3">
+                <div class="w-16 h-16 rounded-full bg-paper-100 flex items-center justify-center mx-auto text-paper-400 text-2xl">
+                    <i class="fa-solid fa-book-open"></i>
+                </div>
+                <h3 class="font-book text-xl font-bold text-leather-900">Heç bir kitab tapılmadı</h3>
+                <p class="text-xs text-paper-800">Zəhmət olmasa filtrləri dəyişərək yenidən axtarın.</p>
+            </div>
+        </section>
+
+        <!-- ======================= BÖLMƏ 2: KİTAB MAĞAZALARI ======================= -->
+        <section id="sectionStores" class="hidden space-y-6">
+            <div class="bg-white rounded-3xl p-8 border border-paper-200 shadow-sm flex items-center justify-between">
+                <div>
+                    <h2 class="font-book text-2xl sm:text-3xl font-black text-leather-900">Rəsmi Kitab Evləri</h2>
+                    <p class="text-xs text-paper-800 mt-1">Sistemdə qeydiyyatdan keçmiş rəsmi kitab mağazaları.</p>
+                </div>
+            </div>
+            <div id="storesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        </section>
+
+        <!-- ======================= BÖLMƏ 3: MƏNİM ELANLARIM (USER ÜÇÜN) ======================= -->
+        <section id="sectionMyBooks" class="hidden space-y-6">
+            <div class="bg-white rounded-3xl p-6 sm:p-8 border border-paper-200 shadow-sm flex items-center justify-between">
+                <div>
+                    <h2 class="font-book text-2xl font-black text-leather-900">Mənim Kitab Elanlarım</h2>
+                    <p class="text-xs text-paper-800 mt-1">Yerləşdirdiyiniz elanları idarə edin, redaktə edin və ya silin.</p>
+                </div>
+                <button onclick="openAddBookModal()" class="px-4 py-2.5 rounded-xl book-gold-gradient text-white text-xs font-black shadow-md hover:opacity-95 transition">
+                    <i class="fa-solid fa-plus-circle mr-1.5"></i>Yeni Elan Yerləşdir
+                </button>
+            </div>
+            <div id="myBooksGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+        </section>
+
+        <!-- ======================= BÖLMƏ 4: SEVİMLİLƏR (WISHLIST) ======================= -->
+        <section id="sectionWishlist" class="hidden space-y-6">
+            <div class="bg-white rounded-3xl p-6 sm:p-8 border border-paper-200 shadow-sm">
+                <h2 class="font-book text-2xl font-black text-rose-800">
+                    <i class="fa-solid fa-heart mr-2 text-rose-600"></i>Sevimlilər Siyahım
+                </h2>
+                <p class="text-xs text-paper-800 mt-1">Bəyəndiyiniz kitablar burada saxlanılır.</p>
+            </div>
+            <div id="wishlistGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+        </section>
+
+        <!-- ======================= BÖLMƏ 5: YALNIZ MAĞAZA ÜÇÜN ÖZ MAĞAZA PROFİLİ VƏ KİTABLARI ======================= -->
+        <section id="sectionStoreDashboard" class="hidden space-y-6">
+            <div class="bg-white rounded-3xl p-6 sm:p-8 border border-paper-200 shadow-md">
+                <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-16 h-16 rounded-2xl book-leather-gradient text-amber-400 flex items-center justify-center text-3xl font-black shadow-md">
+                            <i class="fa-solid fa-shop"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <h2 id="storeDashName" class="font-book text-2xl font-black text-leather-900">Mağaza Adı</h2>
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300">
+                                    <i class="fa-solid fa-circle-check mr-1"></i>Rəsmi Mağaza
+                                </span>
+                            </div>
+                            <div class="flex flex-wrap items-center gap-3 text-xs text-paper-800 mt-1">
+                                <span><i class="fa-solid fa-location-dot mr-1 text-amber-700"></i><span id="storeDashLocation">-</span></span>
+                                <span><i class="fa-solid fa-phone mr-1 text-amber-700"></i><span id="storeDashPhone">-</span></span>
+                                <span><i class="fa-solid fa-envelope mr-1 text-amber-700"></i><span id="storeDashEmail">-</span></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center space-x-3 w-full md:w-auto">
+                        <button onclick="openEditStoreModal()" class="flex-1 md:flex-initial px-4 py-2.5 rounded-xl bg-paper-100 text-leather-900 hover:bg-paper-200 border border-paper-300 text-xs font-bold transition">
+                            <i class="fa-solid fa-pen-to-square mr-1.5"></i>Məlumatları Redaktə Et
+                        </button>
+                        <button onclick="openAddBookModal()" class="flex-1 md:flex-initial px-4 py-2.5 rounded-xl book-gold-gradient text-white text-xs font-black shadow-md hover:opacity-95 transition">
+                            <i class="fa-solid fa-plus-circle mr-1.5"></i>Yeni Kitab Əlavə Et
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-3 mt-6 pt-6 border-t border-paper-200 text-center">
+                    <div class="p-3 bg-[#fbf9f4] rounded-xl border border-paper-200">
+                        <span class="text-[10px] font-bold text-paper-800 uppercase">Toplam Kitab Sayı</span>
+                        <h4 id="storeDashTotalBooks" class="text-xl font-black text-leather-900 mt-0.5">0</h4>
+                    </div>
+                    <div class="p-3 bg-[#fbf9f4] rounded-xl border border-paper-200">
+                        <span class="text-[10px] font-bold text-paper-800 uppercase">Aktiv Satışda</span>
+                        <h4 id="storeDashActiveBooks" class="text-xl font-black text-emerald-700 mt-0.5">0</h4>
+                    </div>
+                    <div class="p-3 bg-[#fbf9f4] rounded-xl border border-paper-200">
+                        <span class="text-[10px] font-bold text-paper-800 uppercase">Satılmış</span>
+                        <h4 id="storeDashSoldBooks" class="text-xl font-black text-amber-700 mt-0.5">0</h4>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <h3 class="font-book text-xl font-bold text-leather-900">Mağazanın Yerləşdirdiyi Kitablar</h3>
+                <div id="storeBooksGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+            </div>
+        </section>
+
+        <!-- ======================= BÖLMƏ 6: İSTİFADƏÇİ PROFİLİ ======================= -->
+        <section id="sectionUserProfile" class="hidden max-w-xl mx-auto space-y-6">
+            <div class="bg-white rounded-3xl p-8 border border-paper-200 shadow-sm">
+                <div class="text-center mb-6">
+                    <div class="w-14 h-14 rounded-2xl book-leather-gradient text-amber-400 flex items-center justify-center mx-auto mb-2 text-2xl font-bold">
+                        <i class="fa-solid fa-user-gear"></i>
+                    </div>
+                    <h2 class="font-book text-2xl font-black text-leather-900">Şəxsi Məlumatlar</h2>
+                </div>
+
+                <form id="userProfileForm" onsubmit="handleUpdateProfile(event)" class="space-y-4">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-leather-900 uppercase mb-1">Ad</label>
+                            <input type="text" id="profName" required class="w-full px-3.5 py-2.5 bg-[#fbf9f4] border border-paper-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-amber-500 transition">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-leather-900 uppercase mb-1">Soyad</label>
+                            <input type="text" id="profSurname" required class="w-full px-3.5 py-2.5 bg-[#fbf9f4] border border-paper-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-amber-500 transition">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-leather-900 uppercase mb-1">Email</label>
+                        <input type="email" id="profEmail" required class="w-full px-3.5 py-2.5 bg-[#fbf9f4] border border-paper-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-amber-500 transition">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-leather-900 uppercase mb-1">Telefon</label>
+                        <input type="tel" id="profPhone" placeholder="+994 50 123 45 67" class="w-full px-3.5 py-2.5 bg-[#fbf9f4] border border-paper-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-amber-500 transition">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-leather-900 uppercase mb-1">Yeni Şifrə (Dəyişmək istəmirsinizsə boş saxlayın)</label>
+                        <div class="relative">
+                            <input type="password" id="profPassword" placeholder="••••••••" class="w-full px-3.5 py-2.5 pr-10 bg-[#fbf9f4] border border-paper-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-amber-500 transition">
+                            <button type="button" onclick="togglePasswordVisibility('profPassword', 'profPasswordEye')" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-paper-400 hover:text-amber-700 transition">
+                                <i id="profPasswordEye" class="fa-solid fa-eye text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="profSubmitBtn" class="w-full py-3.5 rounded-xl book-gold-gradient text-white font-black text-xs shadow-md transition">
+                        Məlumatları Yadda Saxla
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- ======================= BÖLMƏ 7: YALNIZ ADMIN ÜÇÜN İDARƏETMƏ PANƏLİ ======================= -->
+        <section id="sectionAdmin" class="hidden space-y-6">
+            <div class="bg-white rounded-3xl p-6 sm:p-8 border border-paper-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-black bg-amber-100 text-amber-900 border border-amber-300">
+                        <i class="fa-solid fa-crown mr-1.5 text-amber-700"></i>Sistem Admin Paneli
+                    </span>
+                    <h2 class="font-book text-2xl sm:text-3xl font-black text-leather-900 mt-2">Platforma İdarəetməsi</h2>
+                </div>
+                <div>
+                    <button onclick="openCreateStoreModal()" class="px-4 py-2.5 rounded-xl book-gold-gradient text-white text-xs font-black shadow-md hover:opacity-95 transition">
+                        <i class="fa-solid fa-plus-circle mr-1.5"></i>Yeni Mağaza Yarat (OTP ilə)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Statistika Kartları -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-white rounded-2xl p-6 border border-paper-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-bold text-paper-800 uppercase tracking-wider">Toplam Kitab Sayı</span>
+                        <h3 id="statBookCount" class="text-3xl font-black text-amber-700 mt-1">0</h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-book"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-6 border border-paper-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-bold text-paper-800 uppercase tracking-wider">İstifadəçilər</span>
+                        <h3 id="statCustomerCount" class="text-3xl font-black text-emerald-700 mt-1">0</h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-6 border border-paper-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-bold text-paper-800 uppercase tracking-wider">Rəsmi Mağazalar</span>
+                        <h3 id="statStoreCount" class="text-3xl font-black text-leather-800 mt-1">0</h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-paper-100 text-leather-900 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-shop"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin Cədvəlləri -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-paper-200 space-y-5">
+                <div class="flex border-b border-paper-200 pb-3 space-x-6">
+                    <button onclick="showAdminTab('stores')" id="adminTabStoresBtn" class="text-xs font-black text-amber-800 border-b-2 border-amber-800 pb-2">
+                        <i class="fa-solid fa-store mr-1.5"></i> Mağazalar (Kitabları, Sayı və Qiyməti)
+                    </button>
+                    <button onclick="showAdminTab('customers')" id="adminTabCustomersBtn" class="text-xs font-black text-paper-500 hover:text-leather-900 pb-2">
+                        <i class="fa-solid fa-users mr-1.5"></i> İstifadəçilər (Kitab Sayı və Adları)
+                    </button>
+                </div>
+
+                <!-- Mağazalar Cədvəli -->
+                <div id="adminStoresTab" class="overflow-x-auto custom-scrollbar">
+                    <table class="w-full text-left text-xs text-leather-900">
+                        <thead class="bg-paper-100 font-bold uppercase border-b border-paper-200">
+                            <tr>
+                                <th class="py-3 px-4">ID</th>
+                                <th class="py-3 px-4">Mağaza Adı</th>
+                                <th class="py-3 px-4">Ünvan</th>
+                                <th class="py-3 px-4">Telefon</th>
+                                <th class="py-3 px-4">Email</th>
+                                <th class="py-3 px-4 text-center">Kitab Sayı</th>
+                                <th class="py-3 px-4 text-center">Kitabların Siyahısı</th>
+                                <th class="py-3 px-4 text-right">Əməliyyat</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminStoresTableBody"></tbody>
+                    </table>
+                </div>
+
+                <!-- İstifadəçilər Cədvəli -->
+                <div id="adminCustomersTab" class="hidden overflow-x-auto custom-scrollbar">
+                    <table class="w-full text-left text-xs text-leather-900">
+                        <thead class="bg-paper-100 font-bold uppercase border-b border-paper-200">
+                            <tr>
+                                <th class="py-3 px-4">ID</th>
+                                <th class="py-3 px-4">Ad Soyad</th>
+                                <th class="py-3 px-4">Email</th>
+                                <th class="py-3 px-4">Telefon</th>
+                                <th class="py-3 px-4">Rol</th>
+                                <th class="py-3 px-4 text-center">Kitab Sayı</th>
+                                <th class="py-3 px-4 text-center">Kitabların Siyahısı</th>
+                                <th class="py-3 px-4 text-right">Əməliyyat</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminCustomersTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ======================= FOOTER ======================= -->
+    <footer class="mt-auto bg-white border-t border-paper-200 py-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-paper-800 gap-3">
+            <div class="flex items-center space-x-2">
+                <span class="font-bold text-leather-900">ShelfToShelf &copy; 2026</span>
+                <span>|</span>
+                <span class="italic font-book text-amber-800">"Kitablar ağılın uşaqlarıdır"</span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span>Dəstək: <a href="mailto:admin@shelftoshelf.com" class="text-amber-800 font-bold underline">admin@shelftoshelf.com</a></span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ======================= MODALLAR ======================= -->
+
+    <!-- 1. KİTAB DETAL MODALI -->
+    <div id="bookDetailModal" class="fixed inset-0 z-50 hidden bg-leather-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-paper-300 relative max-h-[92vh] overflow-y-auto custom-scrollbar">
+            <button onclick="closeModal('bookDetailModal')" class="absolute top-5 right-5 w-8 h-8 rounded-full bg-paper-100 hover:bg-paper-200 flex items-center justify-center text-leather-900 transition">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-6">
+                <div class="sm:col-span-5 flex flex-col items-center">
+                    <div class="book-cover-3d w-48 h-64 sm:h-72 rounded-xl bg-slate-800 relative mb-3">
+                        <img id="detailBookImage" src="" alt="Kitab üzlüyü" class="w-full h-full object-cover">
+                        <button id="detailWishlistBtn" onclick="toggleWishlistFromDetail()" class="hidden absolute top-2 right-2 w-9 h-9 rounded-full shadow-md z-30 flex items-center justify-center text-sm transition transform hover:scale-110 active:scale-90" title="Sevimlilər">
+                            <i class="fa-regular fa-heart"></i>
+                        </button>
+                    </div>
+                    <div class="w-full text-center">
+                        <span id="detailBookPrice" class="text-2xl font-black text-amber-800 block">0.00 ₼</span>
+                        <span id="detailNegotiableBadge" class="inline-block mt-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200">
+                            Qiymətdə razılaşma var
+                        </span>
+                    </div>
+                </div>
+
+                <div class="sm:col-span-7 space-y-4">
+                    <div>
+                        <span id="detailBookGenre" class="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-md bg-paper-100 text-leather-800">BƏDİİ</span>
+                        <h3 id="detailBookTitle" class="font-book text-2xl font-black text-leather-900 mt-1">Kitabın Adı</h3>
+                        <p id="detailBookAuthor" class="text-xs font-bold text-amber-800">Müəllif</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 text-xs bg-[#fbf9f4] p-3 rounded-2xl border border-paper-200">
+                        <div><span class="text-paper-500">Şəhər:</span> <b id="detailBookCity" class="text-leather-900 ml-1">Bakı</b></div>
+                        <div><span class="text-paper-500">Vəziyyət:</span> <b id="detailBookCondition" class="text-leather-900 ml-1">Əla</b></div>
+                        <div><span class="text-paper-500">Səhifə:</span> <b id="detailBookPages" class="text-leather-900 ml-1">-</b></div>
+                        <div><span class="text-paper-500">İl:</span> <b id="detailBookYear" class="text-leather-900 ml-1">-</b></div>
+                        <div><span class="text-paper-500">Cild:</span> <b id="detailBookCover" class="text-leather-900 ml-1">-</b></div>
+                        <div><span class="text-paper-500">Çatdırılma:</span> <b id="detailBookDelivery" class="text-leather-900 ml-1">-</b></div>
+                    </div>
+
+                    <div>
+                        <h4 class="text-xs font-bold text-leather-900 uppercase">Haqqında</h4>
+                        <p id="detailBookDesc" class="text-xs text-paper-800 leading-relaxed mt-1 whitespace-pre-line"></p>
+                    </div>
+
+                    <div class="p-3.5 bg-paper-50 rounded-2xl border border-paper-200 space-y-2">
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="text-paper-500">Satıcı:</span>
+                            <span id="detailSellerName" class="font-bold text-leather-900">Ad</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 pt-2">
+                            <a id="detailWhatsAppBtn" href="#" target="_blank" class="py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs text-center flex items-center justify-center space-x-1.5 transition">
+                                <i class="fa-brands fa-whatsapp text-sm"></i>
+                                <span>WhatsApp ilə Yaz</span>
+                            </a>
+                            <a id="detailCallBtn" href="#" class="py-2.5 px-3 rounded-xl bg-leather-900 hover:bg-leather-800 text-white font-black text-xs text-center flex items-center justify-center space-x-1.5 transition">
+                                <i class="fa-solid fa-phone text-sm"></i>
+                                <span>Zəng Et</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. KİTAB ƏLAVƏ ET / REDAKTƏ ET MODALI -->
+    <div id="bookModal" class="fixed inset-0 z-50 hidden bg-leather-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-paper-300 relative max-h-[92vh] overflow-y-auto custom-scrollbar">
+            <button onclick="closeModal('bookModal')" class="absolute top-5 right-5 w-8 h-8 rounded-full bg-paper-100 hover:bg-paper-200 flex items-center justify-center text-leather-900 transition">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <h3 id="bookModalTitle" class="font-book text-2xl font-black text-leather-900 mb-4">Yeni Kitab Elanı</h3>
+
+            <form id="bookForm" onsubmit="handleSaveBook(event)" class="space-y-4">
+                <input type="hidden" id="editBookId">
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-leather-900 uppercase mb-1">Kitabın Adı *</label>
+                        <input type="text" id="bookTitle" required placeholder="Kitabın adını yazın..." class="w-full px-3.5 py-2.5 bg-[#fbf9f4] border border-paper-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-amber-500 transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-leather-900 uppercase mb-1">Müəllif(lər) *</label>
+                        <input type="text" id="bookAuthors" required placeholder="Müəllifin adını yazın..." class="w-full px-3.5 py-2.5 bg-[#fbf9f4] border border-paper-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-amber-500 transition">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-leather-900 uppercase mb-1">Qiymət (₼) *</label>
+                        <input type="number" step="0.01" id="bookPrice" required placeholder="15.00" class="w-full px-3.5 py-2.5 bg-[#fbf9f4] border border-paper-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-amber-500 transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-leather-900 uppercase mb-1">Say / Stok *</label>
+                        <input type="number" id="bookStock" required min="1" value="1" class="w-full px-3.5 py-2.5 bg-[#fbf9f4] border border-paper-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-amber-500 transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-leather-900 uppercase mb-1">Şəhər</label>
+                        <input type="text" id="bookCity" placeholder="Bakı" class="w-full px-3.5 py-2.5 bg-[#fbf9f4] border border-paper-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-amber-500 transition">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-leather-900 uppercase mb-1">Janr *</label>
+                        <select id="bookGenre" required class="w-full px-3.5 py-2.5 bg-[#fbf9f4] border border-paper-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-amber-500 transition">
+                            <option value="FICTION">Bədii Ədəbiyyat</option>
+                            <option value="DRAMA">Dram Əsərləri</option>
+                            <option value="HISTORY">Tarixi Əsərlər</option>
+                            <option value="SCIENCE">Elmi Ədəbiyyat</option>
+                            <option value="FANTASY">Fantastika</option>
+                            <option value="POETRY">Şeir və Qəzəllər</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-leather-900 uppercase mb-1">Vəziyyət *</label>
+                        <select id="bookCondition" required class="w-full px-3.5 py-2.5 bg-[#fbf9f4] border border-paper-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-amber-500 transition">
+                            <option value="LIKE_NEW">Yeni Kimi (Əla)</option>
+                            <option value="NEW">Tamamilə Yeni</option>
+                            <option value="GOOD">Yaxşı Vəziyyətdə</option>
+                            <option value="ACCEPTABLE">Orta Vəziyyətdə</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-leather-900 uppercase mb-1">Status</label>
+                        <select id="bookStatus" class="w-full px-3.5 py-2.5 bg-[#fbf9f4] border border-paper-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-amber-500 transition">
+                            <option value="ACTIVE">AKTİV (Satışdadır)</option>
+                            <option value="SOLD">SATILDI</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-leather-900 uppercase mb-1">Kitabın Şəkil Linki (URL)</label>
+                    <input type="url" id="bookImageUrl" placeholder="https://..." class="w-full px-3.5 py-2.5 bg-[#fbf9f4] border border-paper-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-amber-500 transition">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 p-3 bg-[#fbf9f4] rounded-xl border border-paper-200 text-xs">
+                    <label class="inline-flex items-center space-x-2 cursor-pointer">
+                        <input type="checkbox" id="bookIsNegotiable" class="rounded text-amber-600 focus:ring-amber-500 w-4 h-4">
+                        <span class="font-bold text-leather-900">Qiymətdə razılaşma var</span>
+                    </label>
+                    <label class="inline-flex items-center space-x-2 cursor-pointer">
+                        <input type="checkbox" id="bookDeliveryAvailable" class="rounded text-amber-600 focus:ring-amber-500 w-4 h-4">
+                        <span class="font-bold text-leather-900">Çatdırılma mümkündür</span>
+                    </label>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-leather-900 uppercase mb-1">Haqqında Qısa Məlumat</label>
+                    <textarea id="bookDescription" rows="3" placeholder="Kitabın vəziyyəti və məzmunu haqqında..." class="w-full px-3.5 py-2.5 bg-[#fbf9f4] border border-paper-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-amber-500 transition"></textarea>
+                </div>
+
+                <button type="submit" id="bookSubmitBtn" class="w-full py-3.5 rounded-xl book-gold-gradient text-white font-black text-xs shadow-md hover:opacity-95 transition">
+                    Yadda Saxla
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 3. ADMIN ÜÇÜN KİTABLARIN ADI, SAYI VƏ QİYMƏTİ MODALI -->
+    <div id="adminBookSummaryModal" class="fixed inset-0 z-50 hidden bg-leather-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-xl w-full p-6 shadow-2xl border border-paper-300 relative max-h-[85vh] overflow-y-auto custom-scrollbar">
+            <button onclick="closeModal('adminBookSummaryModal')" class="absolute top-5 right-5 w-8 h-8 rounded-full bg-paper-100 hover:bg-paper-200 flex items-center justify-center text-leather-900 transition">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="mb-4">
+                <span class="text-[10px] font-bold text-amber-800 uppercase tracking-widest">Admin Xülasəsi</span>
+                <h3 id="adminSummaryModalTitle" class="font-book text-xl font-black text-leather-900">Kitabların Siyahısı</h3>
+                <p class="text-xs text-paper-800">Kitabların adı, sayı, qiyməti və statusu.</p>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-paper-100 font-bold uppercase text-paper-900 border-b border-paper-200">
+                        <tr>
+                            <th class="py-2.5 px-3">Kitabın Adı</th>
+                            <th class="py-2.5 px-3 text-center">Sayı</th>
+                            <th class="py-2.5 px-3 text-right">Qiymət</th>
+                            <th class="py-2.5 px-3 text-center">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminSummaryTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. ADMIN ÜÇÜN MAĞAZA YARATMAQ MODALI -->
+    <div id="createStoreModal" class="fixed inset-0 z-50 hidden bg-leather-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-paper-300 relative">
+            <button onclick="closeModal('createStoreModal')" class="absolute top-5 right-5 w-8 h-8 rounded-full bg-paper-100 hover:bg-paper-200 flex items-center justify-center text-leather-900 transition">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="text-center mb-6">
+                <div class="w-12 h-12 rounded-2xl book-leather-gradient text-amber-400 flex items-center justify-center mx-auto mb-2 text-xl font-bold">
+                    <i class="fa-solid fa-store"></i>
+                </div>
+                <h3 class="font-book text-2xl font-black text-leather-900">Yeni Mağaza Yarat</h3>
+                <p class="text-xs text-paper-800 mt-1">Mağazanın e-poçtuna OTP kodu göndəriləcək.</p>
+            </div>
+
+            <form id="createStoreForm" onsubmit="handleCreateStore(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold text-leather-900 uppercase mb-1">Mağaza Adı *</label>
+                    <input type="text" id="storeName" required placeholder="Məs: Qanun Kitab Evi" class="w-full px-3.5 py-2.5 bg-[#fbf9f4] border border-paper-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-amber-500 transition">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-leather-900 uppercase mb-1">Ünvan / Filial *</label>
+                    <input type="text" id="storeLocation" required placeholder="Bakı ş., Nizami küç. 45" class="w-full px-3.5 py-2.5 bg-[#fbf9f4] border border-paper-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-amber-500 transition">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-leather-900 uppercase mb-1">Telefon *</label>
+                    <input type="tel" id="storePhone" required placeholder="+994 12 555 44 33" class="w-full px-3.5 py-2.5 bg-[#fbf9f4] border border-paper-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-amber-500 transition">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-leather-900 uppercase mb-1">Email *</label>
+                    <input type="email" id="storeEmail" required placeholder="magaza@example.com" class="w-full px-3.5 py-2.5 bg-[#fbf9f4] border border-paper-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-amber-500 transition">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-leather-900 uppercase mb-1">Şifrə *</label>
+                    <div class="relative">
+                        <input type="password" id="storePassword" required placeholder="••••••••" class="w-full px-3.5 py-2.5 pr-10 bg-[#fbf9f4] border border-paper-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-amber-500 transition">
+                        <button type="button" onclick="togglePasswordVisibility('storePassword', 'storePasswordEye')" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-paper-400 hover:text-amber-700 transition">
+                            <i id="storePasswordEye" class="fa-solid fa-eye text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" id="createStoreSubmitBtn" class="w-full mt-2 py-3.5 rounded-xl book-gold-gradient text-white font-black text-xs shadow-md transition">
+                    Mağazanı Yarat (OTP Göndərilsin)
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 5. MAĞAZANIN ÖZ MƏLUMATLARINI REDAKTƏ ETMƏ MODALI -->
+    <div id="editStoreModal" class="fixed inset-0 z-50 hidden bg-leather-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-paper-300 relative">
+            <button onclick="closeModal('editStoreModal')" class="absolute top-5 right-5 w-8 h-8 rounded-full bg-paper-100 hover:bg-paper-200 flex items-center justify-center text-leather-900 transition">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <h3 class="font-book text-2xl font-black text-leather-900 mb-4">Mağaza Məlumatlarını Yenilə</h3>
+
+            <form id="editStoreForm" onsubmit="handleUpdateMyStore(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold text-leather-900 uppercase mb-1">Mağaza Adı</label>
+                    <input type="text" id="editStoreName" required class="w-full px-3.5 py-2.5 bg-[#fbf9f4] border border-paper-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-amber-500 transition">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-leather-900 uppercase mb-1">Ünvan / Filial</label>
+                    <input type="text" id="editStoreLocation" required class="w-full px-3.5 py-2.5 bg-[#fbf9f4] border border-paper-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-amber-500 transition">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-leather-900 uppercase mb-1">Telefon</label>
+                    <input type="tel" id="editStorePhone" required class="w-full px-3.5 py-2.5 bg-[#fbf9f4] border border-paper-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-amber-500 transition">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-leather-900 uppercase mb-1">Email</label>
+                    <input type="email" id="editStoreEmail" required class="w-full px-3.5 py-2.5 bg-[#fbf9f4] border border-paper-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-amber-500 transition">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-leather-900 uppercase mb-1">Yeni Şifrə (Dəyişmək istəmirsinizsə boş saxlayın)</label>
+                    <div class="relative">
+                        <input type="password" id="editStorePassword" placeholder="••••••••" class="w-full px-3.5 py-2.5 pr-10 bg-[#fbf9f4] border border-paper-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-amber-500 transition">
+                        <button type="button" onclick="togglePasswordVisibility('editStorePassword', 'editStorePasswordEye')" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-paper-400 hover:text-amber-700 transition">
+                            <i id="editStorePasswordEye" class="fa-solid fa-eye text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" id="editStoreSubmitBtn" class="w-full mt-2 py-3.5 rounded-xl book-gold-gradient text-white font-black text-xs shadow-md transition">
+                    Məlumatları Yadda Saxla
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 6. QEYDİYYAT VƏ OTP MODALI -->
+    <div id="registerModal" class="fixed inset-0 z-50 hidden bg-leather-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-paper-300 relative">
+            <button onclick="closeModal('registerModal')" class="absolute top-5 right-5 w-8 h-8 rounded-full bg-paper-100 hover:bg-paper-200 flex items-center justify-center text-leather-900 transition">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <!-- 1-ci Addım: Form -->
+            <div id="registerStep1">
+                <div class="text-center mb-6">
+                    <div class="w-12 h-12 rounded-2xl book-gold-gradient text-white flex items-center justify-center mx-auto mb-2 text-xl font-bold shadow-md">
+                        <i class="fa-solid fa-user-plus"></i>
+                    </div>
+                    <h3 class="font-book text-2xl font-black text-leather-900">Qeydiyyat</h3>
+                    <p class="text-xs text-paper-800 mt-1">E-poçt ünvanınıza 6 rəqəmli OTP kodu göndəriləcək.</p>
+                </div>
+
+                <form id="registerForm" onsubmit="handleRegister(event)" class="space-y-3">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-leather-900 uppercase mb-1">Ad *</label>
+                            <input type="text" id="regName" required placeholder="Gülçin" class="w-full px-3.5 py-2.5 bg-[#fbf9f4] border border-paper-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-amber-500 transition">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-leather-900 uppercase mb-1">Soyad *</label>
+                            <input type="text" id="regSurname" required placeholder="Mirzəyeva" class="w-full px-3.5 py-2.5 bg-[#fbf9f4] border border-paper-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-amber-500 transition">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-leather-900 uppercase mb-1">E-poçt * (OTP bura gələcək)</label>
+                        <input type="email" id="regEmail" required placeholder="adiniz@example.com" class="w-full px-3.5 py-2.5 bg-[#fbf9f4] border border-paper-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-amber-500 transition">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-leather-900 uppercase mb-1">Telefon *</label>
+                        <input type="tel" id="regPhone" required placeholder="+994 50 123 45 67" class="w-full px-3.5 py-2.5 bg-[#fbf9f4] border border-paper-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-amber-500 transition">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-leather-900 uppercase mb-1">Şifrə *</label>
+                        <div class="relative">
+                            <input type="password" id="regPassword" required placeholder="Ən azı 6 simvol" class="w-full px-3.5 py-2.5 pr-10 bg-[#fbf9f4] border border-paper-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-amber-500 transition">
+                            <button type="button" onclick="togglePasswordVisibility('regPassword', 'regPasswordEye')" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-paper-400 hover:text-amber-700 transition">
+                                <i id="regPasswordEye" class="fa-solid fa-eye text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="regSubmitBtn" class="w-full mt-2 py-3.5 rounded-xl book-gold-gradient text-white font-black text-xs shadow-md transition">
+                        Qeydiyyatdan Keç və OTP Al
+                    </button>
+                </form>
+            </div>
+
+            <!-- 2-ci Addım: OTP Kodu Təsdiqləmə -->
+            <div id="registerStep2Otp" class="hidden">
+                <div class="text-center mb-6">
+                    <div class="w-14 h-14 rounded-2xl book-gold-gradient text-white flex items-center justify-center mx-auto mb-3 text-2xl font-bold shadow-md">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <h3 class="font-book text-2xl font-black text-leather-900">OTP Kodu Təsdiqlə</h3>
+                    <p class="text-xs text-paper-800 mt-2">
+                        6 rəqəmli təsdiqləmə kodu <span id="otpTargetEmail" class="font-bold text-amber-900"></span> ünvanına göndərildi.
+                    </p>
+                </div>
+
+                <form id="otpForm" onsubmit="handleVerifyOtp(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-leather-900 uppercase mb-1">E-poçt Ünvanı</label>
+                        <input type="email" id="otpTargetEmailInput" required placeholder="adiniz@example.com"
+                               class="w-full px-3.5 py-2.5 bg-[#fbf9f4] border border-paper-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-amber-500 transition">
+                    </div>
+
+                    <div>
+                        <label class="block text-center text-xs font-bold text-leather-900 uppercase mb-2">6 Rəqəmli Təsdiq Kodu</label>
+                        <input type="text" id="otpCodeInput" required maxlength="6" placeholder="000000"
+                               class="w-full text-center tracking-[0.5em] text-2xl font-black py-3 bg-[#fbf9f4] border-2 border-amber-400 rounded-2xl focus:outline-none focus:border-amber-700 transition">
+                    </div>
+
+                    <div class="flex items-center justify-between text-xs text-paper-800 px-1">
+                        <span>Bitmə vaxtı: <span id="otpTimer" class="font-bold text-rose-600">05:00</span></span>
+                        <button type="button" onclick="resendOtpCode()" class="text-amber-800 hover:text-amber-950 font-bold underline">
+                            Kodu Yenidən Göndər
+                        </button>
+                    </div>
+
+                    <button type="submit" id="otpVerifyBtn" class="w-full py-3.5 rounded-xl book-gold-gradient text-white font-black text-xs shadow-md transition">
+                        <i class="fa-solid fa-circle-check mr-1.5"></i> Təsdiqlə və Hesabı Aç
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================= JAVASCRIPT MƏNTİQİ ======================= -->
+    <script>
+        const API_BASE = '';
+        let authToken = localStorage.getItem('s2s_token') || null;
+        let currentUser = null;
+        let allBooksList = [];
+        let allStoresList = [];
+        let userWishlistIds = new Set();
+        let registeredPendingEmail = '';
+        let otpCountdownInterval = null;
+
+        // Tətbiq Başlayanda
+        window.addEventListener('DOMContentLoaded', async () => {
+            if (authToken) {
+                await checkAuthStatus();
+            } else {
+                renderUserState(null);
+                navigateTo('welcomePortal');
+            }
+        });
+
+        // İstifadəçi Vəziyyətini Yoxla
+        async function checkAuthStatus() {
+            try {
+                const res = await fetch(`${API_BASE}/api/auth/me`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (res.ok) {
+                    currentUser = await res.json();
+                    renderUserState(currentUser);
+                    if (currentUser.role === 'ADMIN') {
+                        navigateTo('admin');
+                    } else if (currentUser.role === 'STORE') {
+                        navigateTo('storeDashboard');
+                    } else {
+                        await loadWishlistIds();
+                        navigateTo('catalog');
+                    }
+                } else {
+                    logout(false);
+                }
+            } catch (e) {
+                logout(false);
+            }
+        }
+
+        // Şifrə Göz İkonunu Dəyişdir
+        function togglePasswordVisibility(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (!input || !icon) return;
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        // Rola Uyğun Görünüş
+        function renderUserState(user) {
+            const guestActions = document.getElementById('guestActions');
+            const userMenu = document.getElementById('userMenu');
+            const navWelcomePortal = document.getElementById('navWelcomePortal');
+            const navCatalog = document.getElementById('navCatalog');
+            const navStores = document.getElementById('navStores');
+            const navMyBooks = document.getElementById('navMyBooks');
+            const navWishlist = document.getElementById('navWishlist');
+            const navStoreDashboard = document.getElementById('navStoreDashboard');
+            const navAdmin = document.getElementById('navAdmin');
+            const quickAddBookBtn = document.getElementById('quickAddBookBtn');
+
+            if (user) {
+                guestActions.classList.add('hidden');
+                userMenu.classList.remove('hidden');
+                document.getElementById('userNameDisplay').textContent = `${user.name} ${user.surname || ''}`.trim();
+                
+                const roleLabels = {
+                    ADMIN: 'ADMİN',
+                    STORE: 'MAĞAZA',
+                    USER: 'İSTİFADƏÇİ'
+                };
+                document.getElementById('userRoleBadge').textContent = roleLabels[user.role] || user.role;
+                document.getElementById('userAvatarLetter').textContent = (user.name || 'U').charAt(0).toUpperCase();
+
+                if (user.role === 'ADMIN') {
+                    // Admin: kataloq görmür, yalnız admin paneli
+                    navWelcomePortal.classList.add('hidden');
+                    navCatalog.classList.add('hidden');
+                    navStores.classList.add('hidden');
+                    navMyBooks.classList.add('hidden');
+                    navWishlist.classList.add('hidden');
+                    navStoreDashboard.classList.add('hidden');
+                    navAdmin.classList.remove('hidden');
+                    quickAddBookBtn.classList.add('hidden');
+                } else if (user.role === 'STORE') {
+                    // STORE: YALNIZ ÖZ MAĞAZA PROFİLİ VƏ KİTABLARI
+                    navWelcomePortal.classList.add('hidden');
+                    navCatalog.classList.add('hidden');
+                    navStores.classList.add('hidden');
+                    navMyBooks.classList.add('hidden');
+                    navWishlist.classList.add('hidden');
+                    navStoreDashboard.classList.remove('hidden');
+                    navAdmin.classList.add('hidden');
+                    quickAddBookBtn.classList.remove('hidden');
+                } else {
+                    // Normal Oxucu
+                    navWelcomePortal.classList.add('hidden');
+                    navCatalog.classList.remove('hidden');
+                    navStores.classList.remove('hidden');
+                    navMyBooks.classList.remove('hidden');
+                    navWishlist.classList.remove('hidden');
+                    navStoreDashboard.classList.add('hidden');
+                    navAdmin.classList.add('hidden');
+                    quickAddBookBtn.classList.remove('hidden');
+                }
+            } else {
+                // Qonaq
+                guestActions.classList.remove('hidden');
+                userMenu.classList.add('hidden');
+                navWelcomePortal.classList.remove('hidden');
+                navCatalog.classList.remove('hidden');
+                navStores.classList.remove('hidden');
+                navMyBooks.classList.add('hidden');
+                navWishlist.classList.add('hidden');
+                navStoreDashboard.classList.add('hidden');
+                navAdmin.classList.add('hidden');
+                quickAddBookBtn.classList.add('hidden');
+            }
+        }
+
+        // Naviqasiya
+        function navigateTo(tab) {
+            if (currentUser && currentUser.role === 'ADMIN' && tab !== 'admin') {
+                tab = 'admin';
+            }
+            if (currentUser && currentUser.role === 'STORE' && tab !== 'storeDashboard') {
+                tab = 'storeDashboard';
+            }
+
+            const sections = ['welcomePortal', 'catalog', 'stores', 'myBooks', 'wishlist', 'userProfile', 'storeDashboard', 'admin'];
+            sections.forEach(s => {
+                const el = document.getElementById(`section${s.charAt(0).toUpperCase() + s.slice(1)}`);
+                if (el) el.classList.add('hidden');
+            });
+
+            const target = document.getElementById(`section${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
+            if (target) target.classList.remove('hidden');
+
+            if (tab === 'catalog') loadCatalog();
+            else if (tab === 'stores') loadStores();
+            else if (tab === 'myBooks') loadMyBooks();
+            else if (tab === 'wishlist') loadWishlist();
+            else if (tab === 'userProfile') loadUserProfileForm();
+            else if (tab === 'storeDashboard') loadStoreDashboard();
+            else if (tab === 'admin') loadAdminDashboard();
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function handleBrandLogoClick() {
+            if (currentUser && currentUser.role === 'ADMIN') {
+                navigateTo('admin');
+            } else if (currentUser && currentUser.role === 'STORE') {
+                navigateTo('storeDashboard');
+            } else if (currentUser && currentUser.role === 'USER') {
+                navigateTo('catalog');
+            } else {
+                navigateTo('welcomePortal');
+            }
+        }
+
+        function openProfileSection() {
+            if (!currentUser) return;
+            if (currentUser.role === 'ADMIN') navigateTo('admin');
+            else if (currentUser.role === 'STORE') navigateTo('storeDashboard');
+            else if (currentUser.role === 'USER') navigateTo('userProfile');
+        }
+
+        // Sürətli Giriş Test Seçimləri
+        function fillPortalCredentials(email, pwd) {
+            document.getElementById('portalEmail').value = email;
+            document.getElementById('portalPassword').value = pwd;
+        }
+
+        // ======================= VAHİD GİRİŞ FORMU =======================
+        // İstifadəçi, Mağaza və ya Admin - Hər kəs bu tək yerdən daxil olur!
+        async function handlePortalLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('portalEmail').value.trim();
+            const password = document.getElementById('portalPassword').value.trim();
+            const btn = document.getElementById('portalSubmitBtn');
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> Yoxlanılır...';
+
+            try {
+                const res = await fetch(`${API_BASE}/api/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || 'E-poçt və ya şifrə yanlışdır');
+
+                authToken = data.token;
+                localStorage.setItem('s2s_token', authToken);
+                currentUser = data;
+                renderUserState(currentUser);
+
+                showToast(`Xoş gəldiniz, ${data.name}!`, 'success');
+
+                // Roluna görə avtomatik yönləndirmə!
+                if (currentUser.role === 'ADMIN') {
+                    navigateTo('admin');
+                } else if (currentUser.role === 'STORE') {
+                    navigateTo('storeDashboard');
+                } else {
+                    await loadWishlistIds();
+                    navigateTo('catalog');
+                }
+            } catch (err) {
+                showToast(err.message, 'error');
+                if (err.message && (err.message.includes('OTP') || err.message.includes('təsdiqlənməyib'))) {
+                    setTimeout(() => {
+                        openDirectOtpModal(email);
+                    }, 1200);
+                }
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Daxil Ol';
+            }
+        }
+
+        // Çıxış
+        function logout(showMsg = true) {
+            authToken = null;
+            currentUser = null;
+            userWishlistIds.clear();
+            localStorage.removeItem('s2s_token');
+            renderUserState(null);
+            navigateTo('welcomePortal');
+            if (showMsg) showToast('Hesabdan çıxış edildi', 'info');
+        }
+
+        // ======================= QEYDİYYAT VƏ OTP =======================
+        async function handleRegister(e) {
+            e.preventDefault();
+            const name = document.getElementById('regName').value.trim();
+            const surname = document.getElementById('regSurname').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const phone = document.getElementById('regPhone').value.trim();
+            const password = document.getElementById('regPassword').value.trim();
+            const btn = document.getElementById('regSubmitBtn');
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> OTP Göndərilir...';
+
+            try {
+                const res = await fetch(`${API_BASE}/api/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, surname, email, phone, password })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || 'Qeydiyyat xətası baş verdi');
+
+                registeredPendingEmail = email;
+                document.getElementById('otpTargetEmail').textContent = email;
+                document.getElementById('otpTargetEmailInput').value = email;
+
+                document.getElementById('registerStep1').classList.add('hidden');
+                document.getElementById('registerStep2Otp').classList.remove('hidden');
+                startOtpTimer(300);
+                showToast(data.message || 'OTP kodu e-poçtunuza göndərildi', 'info');
+            } catch (err) {
+                showToast(err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Qeydiyyatdan Keç və OTP Al';
+            }
+        }
+
+        function startOtpTimer(durationSeconds) {
+            clearInterval(otpCountdownInterval);
+            let timer = durationSeconds;
+            const timerEl = document.getElementById('otpTimer');
+
+            otpCountdownInterval = setInterval(() => {
+                const minutes = Math.floor(timer / 60);
+                const seconds = timer % 60;
+                timerEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                if (--timer < 0) {
+                    clearInterval(otpCountdownInterval);
+                    timerEl.textContent = 'Müddət bitdi';
+                }
+            }, 1000);
+        }
+
+        async function resendOtpCode() {
+            const emailInput = document.getElementById('otpTargetEmailInput');
+            const email = (emailInput && emailInput.value ? emailInput.value : registeredPendingEmail || '').trim();
+            if (!email) {
+                showToast('Zəhmət olmasa e-poçt ünvanını daxil edin', 'error');
+                return;
+            }
+            try {
+                const res = await fetch(`${API_BASE}/api/auth/resend-otp?email=${encodeURIComponent(email)}`, {
+                    method: 'POST'
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || 'Xəta baş verdi');
+                showToast(data.message || 'Yeni OTP kodu göndərildi', 'info');
+                startOtpTimer(300);
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        }
+
+        async function handleVerifyOtp(e) {
+            e.preventDefault();
+            const otp = document.getElementById('otpCodeInput').value.trim();
+            const emailInput = document.getElementById('otpTargetEmailInput');
+            const email = (emailInput && emailInput.value ? emailInput.value : registeredPendingEmail || '').trim();
+            if (!email) {
+                showToast('Zəhmət olmasa e-poçt ünvanını daxil edin', 'error');
+                return;
+            }
+            const btn = document.getElementById('otpVerifyBtn');
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> Yoxlanılır...';
+
+            try {
+                const res = await fetch(`${API_BASE}/api/auth/verify-otp`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email, otp: otp })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || 'OTP kodu təsdiqlənmədi');
+
+                clearInterval(otpCountdownInterval);
+                authToken = data.token;
+                localStorage.setItem('s2s_token', authToken);
+                currentUser = data;
+                renderUserState(currentUser);
+
+                closeModal('registerModal');
+                showToast(data.message || 'Hesabınız uğurla təsdiqləndi!', 'success');
+
+                if (currentUser.role === 'ADMIN') navigateTo('admin');
+                else if (currentUser.role === 'STORE') navigateTo('storeDashboard');
+                else navigateTo('catalog');
+            } catch (err) {
+                showToast(err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-circle-check mr-1.5"></i> Təsdiqlə və Hesabı Aç';
+            }
+        }
+
+        function openDirectOtpModal(defaultEmail = '') {
+            registeredPendingEmail = defaultEmail;
+            const emailInput = document.getElementById('otpTargetEmailInput');
+            if (emailInput) emailInput.value = defaultEmail;
+            document.getElementById('otpTargetEmail').textContent = defaultEmail || 'e-poçt';
+            document.getElementById('registerStep1').classList.add('hidden');
+            document.getElementById('registerStep2Otp').classList.remove('hidden');
+            document.getElementById('otpCodeInput').value = '';
+            startOtpTimer(300);
+            openModal('registerModal');
+        }
+
+        // ======================= KATALOQ VƏ KİTABLAR =======================
+        async function loadCatalog() {
+            try {
+                const res = await fetch(`${API_BASE}/api/books`);
+                if (!res.ok) throw new Error('Kitabları yükləmək mümkün olmadı');
+                allBooksList = await res.json();
+                applyFilters();
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function applyFilters() {
+            const search = (document.getElementById('filterSearch').value || '').toLowerCase();
+            const genre = document.getElementById('filterGenre').value;
+            const condition = document.getElementById('filterCondition').value;
+            const sort = document.getElementById('filterSort').value;
+            const onlyNegotiable = document.getElementById('filterNegotiable').checked;
+            const onlyDelivery = document.getElementById('filterDelivery').checked;
+
+            let filtered = allBooksList.filter(b => {
+                if (b.status === 'SOLD') return false;
+                if (search) {
+                    const matchTitle = (b.title || '').toLowerCase().includes(search);
+                    const matchAuthor = (b.authors || []).some(a => a.toLowerCase().includes(search));
+                    if (!matchTitle && !matchAuthor) return false;
+                }
+                if (genre && b.genre !== genre) return false;
+                if (condition && b.condition !== condition) return false;
+                if (onlyNegotiable && !b.isNegotiable) return false;
+                if (onlyDelivery && !b.deliveryAvailable) return false;
+                return true;
+            });
+
+            if (sort === 'priceAsc') filtered.sort((a,b) => a.price - b.price);
+            else if (sort === 'priceDesc') filtered.sort((a,b) => b.price - a.price);
+            else filtered.sort((a,b) => (b.id || 0) - (a.id || 0));
+
+            document.getElementById('booksCountBadge').textContent = filtered.length;
+            renderBooksGrid(filtered, 'booksGrid', false);
+
+            const emptyEl = document.getElementById('emptyCatalogState');
+            if (filtered.length === 0) emptyEl.classList.remove('hidden');
+            else emptyEl.classList.add('hidden');
+        }
+
+        // Janr və Vəziyyət Azərbaycan Tərcümələri
+        const genreAzLabels = {
+            FICTION: 'Bədii Ədəbiyyat',
+            DRAMA: 'Dram Əsəri',
+            HISTORY: 'Tarixi Əsər',
+            SCIENCE: 'Elmi Ədəbiyyat',
+            FANTASY: 'Fantastika',
+            POETRY: 'Şeir və Qəzəl'
+        };
+
+        const conditionAzLabels = {
+            NEW: 'Tamamilə Yeni',
+            LIKE_NEW: 'Yeni Kimi (Əla)',
+            GOOD: 'Yaxşı',
+            ACCEPTABLE: 'Orta'
+        };
+
+        function renderBooksGrid(books, containerId, isOwner = false) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            container.innerHTML = '';
+
+            books.forEach(b => {
+                const isFavorite = userWishlistIds.has(b.id);
+                const isSold = b.status === 'SOLD';
+                const sellerName = b.storeName ? `🏪 ${b.storeName}` : `👤 ${b.sellerName || 'Fərdi Satıcı'}`;
+                const phone = b.sellerPhone || '+994501234567';
+                const waLink = `https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent('Salam, ShelfToShelf-dəki "' + b.title + '" kitabı ilə bağlı yazıram.')}`;
+
+                const defaultImg = 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=600&q=80';
+                const coverImg = (b.imageUrls && b.imageUrls.length > 0 && b.imageUrls[0]) ? b.imageUrls[0] : defaultImg;
+
+                const genreLabel = genreAzLabels[b.genre] || b.genre || 'KİTAB';
+                const conditionLabel = conditionAzLabels[b.condition] || 'Əla';
+
+                const card = document.createElement('div');
+                card.id = `card-${containerId}-${b.id}`;
+                card.setAttribute('data-book-id', b.id);
+                card.className = `book-card bg-white rounded-3xl p-4 border border-paper-200 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between relative group ${isSold ? 'opacity-70' : ''}`;
+
+                card.innerHTML = `
+                    <div>
+                        <!-- 3D Kitab Üzlüyü və Şəkli -->
+                        <div class="relative mb-3 overflow-hidden rounded-2xl cursor-pointer" onclick="openBookDetailModal(${b.id})">
+                            <div class="book-cover-3d h-60 w-full bg-paper-100 relative">
+                                <img src="${coverImg}" alt="${b.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                
+                                ${isSold ? `
+                                    <div class="absolute inset-0 bg-leather-950/70 backdrop-blur-xs flex items-center justify-center z-20">
+                                        <span class="px-3 py-1 rounded-full text-xs font-black bg-rose-600 text-white tracking-wider uppercase shadow-md">
+                                            SATILDI
+                                        </span>
+                                    </div>
+                                ` : ''}
+
+                                <div class="absolute bottom-2 left-2 px-3 py-1 rounded-xl bg-leather-900/90 text-amber-300 font-black text-sm backdrop-blur-md z-20 shadow-md">
+                                    ${b.price ? b.price.toFixed(2) : '0.00'} ₼
+                                </div>
+
+                                <div class="absolute top-2 left-2 flex flex-col gap-1 z-20">
+                                    ${b.city ? `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-white/90 text-leather-900 backdrop-blur-sm shadow-sm"><i class="fa-solid fa-location-dot text-amber-700 mr-1"></i>${b.city}</span>` : ''}
+                                    ${b.isNegotiable ? `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500 text-white shadow-sm">🤝 Razılaşma</span>` : ''}
+                                </div>
+                            </div>
+
+                            ${currentUser && currentUser.role === 'USER' ? `
+                                <button onclick="event.stopPropagation(); toggleWishlistBook(${b.id})" class="wishlist-btn-${b.id} absolute top-2 right-2 w-8 h-8 rounded-full ${isFavorite ? 'bg-rose-500 text-white shadow-rose-200' : 'bg-white/80 text-leather-800 hover:text-rose-600'} flex items-center justify-center text-xs shadow-md z-30 transition-all duration-200 transform active:scale-90 hover:scale-110" title="${isFavorite ? 'Sevimlilərdən çıxar' : 'Sevimlilərə əlavə et'}">
+                                    <i class="fa-${isFavorite ? 'solid' : 'regular'} fa-heart"></i>
+                                </button>
+                            ` : ''}
+                        </div>
+
+                        <!-- Kitabın Başlığı və Müəllifi -->
+                        <div class="px-1 space-y-1">
+                            <span class="text-[10px] font-black uppercase text-amber-700 tracking-wider">${genreLabel}</span>
+                            <h4 class="font-book text-base font-bold text-leather-900 truncate leading-snug cursor-pointer hover:text-amber-700" onclick="openBookDetailModal(${b.id})">
+                                ${b.title}
+                            </h4>
+                            <p class="text-xs font-semibold text-paper-800 truncate">${(b.authors || []).join(', ') || 'Müəllif qeyd edilməyib'}</p>
+                            
+                            <div class="pt-1 flex items-center justify-between text-[11px] text-paper-500">
+                                <span class="truncate max-w-[140px]">${sellerName}</span>
+                                <span class="font-bold text-amber-800">${conditionLabel}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Əməliyyat Düymələri -->
+                    <div class="pt-3 border-t border-paper-100 mt-3 flex items-center gap-2">
+                        ${isOwner ? `
+                            <button onclick="openEditBookModal(${b.id})" class="flex-1 py-2 rounded-xl bg-paper-100 hover:bg-paper-200 text-leather-900 text-xs font-bold transition text-center">
+                                Redaktə
+                            </button>
+                            <button onclick="toggleBookStatus(${b.id}, '${isSold ? 'ACTIVE' : 'SOLD'}')" class="px-2.5 py-2 rounded-xl ${isSold ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-800'} text-xs font-bold transition" title="Statusu dəyiş">
+                                <i class="fa-solid fa-arrows-rotate"></i>
+                            </button>
+                            <button onclick="handleDeleteBook(${b.id})" class="px-2.5 py-2 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs font-bold transition" title="Sil">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        ` : `
+                            <button onclick="openBookDetailModal(${b.id})" class="flex-1 py-2 rounded-xl bg-paper-100 hover:bg-paper-200 text-leather-900 text-xs font-bold transition text-center">
+                                Detallar
+                            </button>
+                            <a href="${waLink}" target="_blank" class="w-9 h-9 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center text-sm shadow-sm transition" title="WhatsApp ilə əlaqə">
+                                <i class="fa-brands fa-whatsapp"></i>
+                            </a>
+                        `}
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        // ======================= KİTAB DETALLARI =======================
+        async function openBookDetailModal(bookId) {
+            try {
+                const res = await fetch(`${API_BASE}/api/books/${bookId}`);
+                if (!res.ok) throw new Error('Kitab tapılmadı');
+                const b = await res.json();
+
+                const defaultImg = 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=600&q=80';
+                document.getElementById('detailBookImage').src = (b.imageUrls && b.imageUrls.length > 0 && b.imageUrls[0]) ? b.imageUrls[0] : defaultImg;
+                document.getElementById('detailBookTitle').textContent = b.title;
+                document.getElementById('detailBookAuthor').textContent = (b.authors || []).join(', ');
+                document.getElementById('detailBookGenre').textContent = genreAzLabels[b.genre] || b.genre || 'KİTAB';
+                document.getElementById('detailBookPrice').textContent = `${b.price ? b.price.toFixed(2) : '0.00'} ₼`;
+                document.getElementById('detailBookDesc').textContent = b.description || 'Əlavə məlumat qeyd edilməyib.';
+
+                document.getElementById('detailBookCity').textContent = b.city || 'Bakı';
+                document.getElementById('detailBookCondition').textContent = conditionAzLabels[b.condition] || 'Yaxşı';
+                document.getElementById('detailBookPages').textContent = b.pageCount ? `${b.pageCount} səh.` : '-';
+                document.getElementById('detailBookYear').textContent = b.publicationYear || '-';
+                document.getElementById('detailBookCover').textContent = b.coverType || 'Yumşaq Cild';
+                document.getElementById('detailBookDelivery').textContent = b.deliveryAvailable ? 'Mövcuddur' : 'Yoxdur';
+
+                const negotiableBadge = document.getElementById('detailNegotiableBadge');
+                if (b.isNegotiable) negotiableBadge.classList.remove('hidden');
+                else negotiableBadge.classList.add('hidden');
+
+                const sellerName = b.storeName ? `🏪 ${b.storeName}` : `👤 ${b.sellerName || 'İstifadəçi'}`;
+                document.getElementById('detailSellerName').textContent = sellerName;
+
+                const phone = b.sellerPhone || '+994501234567';
+                document.getElementById('detailCallBtn').href = `tel:${phone}`;
+                document.getElementById('detailWhatsAppBtn').href = `https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent('Salam, ShelfToShelf-dəki "' + b.title + '" kitabı ilə bağlı yazıram.')}`;
+
+                currentDetailBookId = b.id;
+                const detailWishlistBtn = document.getElementById('detailWishlistBtn');
+                if (detailWishlistBtn) {
+                    if (currentUser && currentUser.role === 'USER') {
+                        detailWishlistBtn.classList.remove('hidden');
+                        const isFav = userWishlistIds.has(b.id);
+                        if (isFav) {
+                            detailWishlistBtn.className = 'absolute top-2 right-2 w-9 h-9 rounded-full bg-rose-500 text-white shadow-rose-300 shadow-md z-30 flex items-center justify-center text-sm transition transform hover:scale-110 active:scale-90';
+                            detailWishlistBtn.innerHTML = '<i class="fa-solid fa-heart"></i>';
+                            detailWishlistBtn.title = 'Sevimlilərdən çıxar';
+                        } else {
+                            detailWishlistBtn.className = 'absolute top-2 right-2 w-9 h-9 rounded-full bg-white/90 text-leather-800 hover:text-rose-600 shadow-md z-30 flex items-center justify-center text-sm transition transform hover:scale-110 active:scale-90';
+                            detailWishlistBtn.innerHTML = '<i class="fa-regular fa-heart"></i>';
+                            detailWishlistBtn.title = 'Sevimlilərə əlavə et';
+                        }
+                    } else {
+                        detailWishlistBtn.classList.add('hidden');
+                    }
+                }
+
+                openModal('bookDetailModal');
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        }
+
+        let currentDetailBookId = null;
+
+        function toggleWishlistFromDetail() {
+            if (currentDetailBookId) {
+                toggleWishlistBook(currentDetailBookId);
+            }
+        }
+
+        // ======================= SEVİMLİLƏR (WISHLIST) SİSTEMİ =======================
+        function syncHeartButtons(bookId, isFav) {
+            const buttons = document.querySelectorAll(`.wishlist-btn-${bookId}`);
+            buttons.forEach(btn => {
+                if (isFav) {
+                    btn.className = `wishlist-btn-${bookId} absolute top-2 right-2 w-8 h-8 rounded-full bg-rose-500 text-white shadow-rose-200 flex items-center justify-center text-xs shadow-md z-30 transition-all duration-200 transform active:scale-90 hover:scale-110`;
+                    btn.innerHTML = '<i class="fa-solid fa-heart"></i>';
+                    btn.title = 'Sevimlilərdən çıxar';
+                } else {
+                    btn.className = `wishlist-btn-${bookId} absolute top-2 right-2 w-8 h-8 rounded-full bg-white/80 text-leather-800 hover:text-rose-600 flex items-center justify-center text-xs shadow-md z-30 transition-all duration-200 transform active:scale-90 hover:scale-110`;
+                    btn.innerHTML = '<i class="fa-regular fa-heart"></i>';
+                    btn.title = 'Sevimlilərə əlavə et';
+                }
+            });
+
+            if (currentDetailBookId === bookId) {
+                const detailBtn = document.getElementById('detailWishlistBtn');
+                if (detailBtn) {
+                    if (isFav) {
+                        detailBtn.className = 'absolute top-2 right-2 w-9 h-9 rounded-full bg-rose-500 text-white shadow-rose-300 shadow-md z-30 flex items-center justify-center text-sm transition transform hover:scale-110 active:scale-90';
+                        detailBtn.innerHTML = '<i class="fa-solid fa-heart"></i>';
+                        detailBtn.title = 'Sevimlilərdən çıxar';
+                    } else {
+                        detailBtn.className = 'absolute top-2 right-2 w-9 h-9 rounded-full bg-white/90 text-leather-800 hover:text-rose-600 shadow-md z-30 flex items-center justify-center text-sm transition transform hover:scale-110 active:scale-90';
+                        detailBtn.innerHTML = '<i class="fa-regular fa-heart"></i>';
+                        detailBtn.title = 'Sevimlilərə əlavə et';
+                    }
+                }
+            }
+        }
+
+        function checkWishlistEmptyState() {
+            const grid = document.getElementById('wishlistGrid');
+            if (!grid) return;
+            const existingEmpty = document.getElementById('emptyWishlistState');
+            const cards = grid.querySelectorAll('.book-card');
+            if (cards.length === 0) {
+                if (!existingEmpty) {
+                    const empty = document.createElement('div');
+                    empty.id = 'emptyWishlistState';
+                    empty.className = 'col-span-full py-16 text-center bg-white rounded-3xl border border-paper-200 p-8 shadow-sm';
+                    empty.innerHTML = `
+                        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-rose-50 flex items-center justify-center text-rose-500 text-2xl shadow-sm">
+                            <i class="fa-regular fa-heart"></i>
+                        </div>
+                        <h3 class="font-book text-xl font-bold text-leather-900">Sevimlilər qutunuz boşdur</h3>
+                        <p class="text-xs text-paper-800 mt-1 max-w-md mx-auto">Hələ heç bir kitabı sevimlilərə əlavə etməmisiniz. Kataloqa keçərək bəyəndiyiniz kitabları ürək simvoluna toxunaraq bura əlavə edə bilərsiniz.</p>
+                        <button onclick="navigateTo('catalog')" class="mt-5 px-6 py-2.5 rounded-2xl bg-leather-900 text-amber-300 font-black text-xs hover:bg-leather-800 shadow-md transition inline-flex items-center space-x-2">
+                            <i class="fa-solid fa-book-open"></i>
+                            <span>Kitab Kataloquna Keç</span>
+                        </button>
+                    `;
+                    grid.appendChild(empty);
+                }
+            } else {
+                if (existingEmpty) existingEmpty.remove();
+            }
+        }
+
+        async function loadWishlistIds() {
+            if (!currentUser || currentUser.role !== 'USER') return;
+            try {
+                const res = await fetch(`${API_BASE}/api/customers/wishlist`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (res.ok) {
+                    const list = await res.json();
+                    userWishlistIds = new Set(list.map(b => b.id));
+                    document.getElementById('wishlistNavCount').textContent = userWishlistIds.size;
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function toggleWishlistBook(bookId) {
+            if (!currentUser || currentUser.role !== 'USER') {
+                showToast('Sevimlilərə əlavə etmək üçün daxil olun', 'info');
+                return;
+            }
+
+            const wasFavorite = userWishlistIds.has(bookId);
+
+            // DƏRHAL ÇIXARILMA: İstifadəçi ürək simvoluna basan andaca sevimlilər qutusundan kitab dərhal silinir!
+            const wishlistCard = document.getElementById(`card-wishlistGrid-${bookId}`);
+            if (wishlistCard && wasFavorite) {
+                wishlistCard.style.pointerEvents = 'none';
+                wishlistCard.style.transition = 'all 0.35s cubic-bezier(0.4, 0, 0.2, 1)';
+                wishlistCard.style.transform = 'scale(0.8) translateY(-20px)';
+                wishlistCard.style.opacity = '0';
+                setTimeout(() => {
+                    if (wishlistCard.parentElement) {
+                        wishlistCard.remove();
+                        checkWishlistEmptyState();
+                    }
+                }, 350);
+            }
+
+            // Tez əks-əlaqə (Optimistic feedback)
+            if (wasFavorite) {
+                userWishlistIds.delete(bookId);
+            } else {
+                userWishlistIds.add(bookId);
+            }
+            document.getElementById('wishlistNavCount').textContent = userWishlistIds.size;
+            syncHeartButtons(bookId, !wasFavorite);
+
+            try {
+                const res = await fetch(`${API_BASE}/api/customers/wishlist/${bookId}`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.added) {
+                        userWishlistIds.add(bookId);
+                        showToast('Sevimlilərə əlavə edildi ❤️', 'success');
+                    } else {
+                        userWishlistIds.delete(bookId);
+                        showToast('Sevimlilərdən çıxarıldı', 'info');
+                    }
+                    document.getElementById('wishlistNavCount').textContent = userWishlistIds.size;
+                    syncHeartButtons(bookId, data.added);
+                    checkWishlistEmptyState();
+                } else {
+                    // Xəta halında geri qaytarırıq (rollback)
+                    if (wasFavorite) userWishlistIds.add(bookId);
+                    else userWishlistIds.delete(bookId);
+                    document.getElementById('wishlistNavCount').textContent = userWishlistIds.size;
+                    syncHeartButtons(bookId, wasFavorite);
+                    const sec = document.getElementById('sectionWishlist');
+                    if (sec && !sec.classList.contains('hidden')) {
+                        await loadWishlist();
+                    }
+                    showToast('Xəta baş verdi', 'error');
+                }
+            } catch (err) {
+                if (wasFavorite) userWishlistIds.add(bookId);
+                else userWishlistIds.delete(bookId);
+                document.getElementById('wishlistNavCount').textContent = userWishlistIds.size;
+                syncHeartButtons(bookId, wasFavorite);
+                const sec = document.getElementById('sectionWishlist');
+                if (sec && !sec.classList.contains('hidden')) {
+                    await loadWishlist();
+                }
+                showToast(err.message, 'error');
+            }
+        }
+
+        async function loadWishlist() {
+            try {
+                const res = await fetch(`${API_BASE}/api/customers/wishlist`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (!res.ok) throw new Error('Sevimlilər yüklənmədi');
+                const list = await res.json();
+                userWishlistIds = new Set(list.map(b => b.id));
+                document.getElementById('wishlistNavCount').textContent = userWishlistIds.size;
+                renderBooksGrid(list, 'wishlistGrid', false);
+                checkWishlistEmptyState();
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        }
+
+        // ======================= İSTİFADƏÇİNİN ÖZ ELANLARI =======================
+        async function loadMyBooks() {
+            try {
+                const res = await fetch(`${API_BASE}/api/books/my-books`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (!res.ok) throw new Error('Elanlar yüklənmədi');
+                const list = await res.json();
+                renderBooksGrid(list, 'myBooksGrid', true);
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        }
+
+        // ======================= YALNIZ MAĞAZA ÜÇÜN DASHBOARD =======================
+        async function loadStoreDashboard() {
+            if (!currentUser || currentUser.role !== 'STORE') return;
+            try {
+                const res = await fetch(`${API_BASE}/api/stores/my-store`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (!res.ok) throw new Error('Mağaza məlumatları yüklənmədi');
+                const store = await res.json();
+
+                document.getElementById('storeDashName').textContent = store.name;
+                document.getElementById('storeDashLocation').textContent = store.location || 'Ünvan qeyd edilməyib';
+                document.getElementById('storeDashPhone').textContent = store.phone || 'Telefon yoxdur';
+                document.getElementById('storeDashEmail').textContent = store.email || '';
+
+                const books = store.books || [];
+                const activeCount = books.filter(b => b.status === 'ACTIVE').length;
+                const soldCount = books.filter(b => b.status === 'SOLD').length;
+
+                document.getElementById('storeDashTotalBooks').textContent = books.length;
+                document.getElementById('storeDashActiveBooks').textContent = activeCount;
+                document.getElementById('storeDashSoldBooks').textContent = soldCount;
+
+                renderBooksGrid(books, 'storeBooksGrid', true);
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        }
+
+        function openEditStoreModal() {
+            document.getElementById('editStoreName').value = document.getElementById('storeDashName').textContent;
+            document.getElementById('editStoreLocation').value = document.getElementById('storeDashLocation').textContent;
+            document.getElementById('editStorePhone').value = document.getElementById('storeDashPhone').textContent;
+            document.getElementById('editStoreEmail').value = document.getElementById('storeDashEmail').textContent;
+            document.getElementById('editStorePassword').value = '';
+            openModal('editStoreModal');
+        }
+
+        async function handleUpdateMyStore(e) {
+            e.preventDefault();
+            const name = document.getElementById('editStoreName').value.trim();
+            const location = document.getElementById('editStoreLocation').value.trim();
+            const phone = document.getElementById('editStorePhone').value.trim();
+            const email = document.getElementById('editStoreEmail').value.trim();
+            const password = document.getElementById('editStorePassword').value.trim();
+            const btn = document.getElementById('editStoreSubmitBtn');
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> Yadda saxlanılır...';
+
+            try {
+                const res = await fetch(`${API_BASE}/api/stores/my-store`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ name, location, phone, email, password })
+                });
+                if (!res.ok) throw new Error('Mağaza yenilənə bilmədi');
+                closeModal('editStoreModal');
+                showToast('Mağaza məlumatları uğurla yeniləndi', 'success');
+                await loadStoreDashboard();
+            } catch (err) {
+                showToast(err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Məlumatları Yadda Saxla';
+            }
+        }
+
+        // ======================= KİTAB ƏLAVƏ ET, REDAKTƏ VƏ SİL =======================
+        function openAddBookModal() {
+            if (!currentUser) {
+                showToast('Elan yerləşdirmək üçün daxil olun', 'info');
+                return;
+            }
+            if (currentUser.role === 'ADMIN') {
+                showToast('Admin kitab əlavə edə bilməz!', 'error');
+                return;
+            }
+            document.getElementById('bookModalTitle').textContent = 'Yeni Kitab Elanı Əlavə Et';
+            document.getElementById('editBookId').value = '';
+            document.getElementById('bookForm').reset();
+            openModal('bookModal');
+        }
+
+        async function openEditBookModal(bookId) {
+            try {
+                const res = await fetch(`${API_BASE}/api/books/${bookId}`);
+                if (!res.ok) throw new Error('Kitab tapılmadı');
+                const book = await res.json();
+
+                document.getElementById('bookModalTitle').textContent = 'Elanı Redaktə Et';
+                document.getElementById('editBookId').value = book.id;
+                document.getElementById('bookTitle').value = book.title;
+                document.getElementById('bookAuthors').value = (book.authors || []).join(', ');
+                document.getElementById('bookPrice').value = book.price;
+                document.getElementById('bookStock').value = book.stockCount || 1;
+                document.getElementById('bookCity').value = book.city || '';
+                document.getElementById('bookGenre').value = book.genre || 'FICTION';
+                document.getElementById('bookCondition').value = book.condition || 'LIKE_NEW';
+                document.getElementById('bookStatus').value = book.status || 'ACTIVE';
+                document.getElementById('bookImageUrl').value = (book.imageUrls && book.imageUrls.length > 0) ? book.imageUrls[0] : '';
+                document.getElementById('bookIsNegotiable').checked = !!book.isNegotiable;
+                document.getElementById('bookDeliveryAvailable').checked = !!book.deliveryAvailable;
+                document.getElementById('bookDescription').value = book.description || '';
+
+                openModal('bookModal');
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        }
+
+        async function handleSaveBook(e) {
+            e.preventDefault();
+            const id = document.getElementById('editBookId').value;
+            const title = document.getElementById('bookTitle').value.trim();
+            const authors = document.getElementById('bookAuthors').value.split(',').map(a => a.trim()).filter(Boolean);
+            const price = parseFloat(document.getElementById('bookPrice').value);
+            const stockCount = parseInt(document.getElementById('bookStock').value) || 1;
+            const city = document.getElementById('bookCity').value.trim();
+            const genre = document.getElementById('bookGenre').value;
+            const condition = document.getElementById('bookCondition').value;
+            const status = document.getElementById('bookStatus').value;
+            const imageUrl = document.getElementById('bookImageUrl').value.trim();
+            const isNegotiable = document.getElementById('bookIsNegotiable').checked;
+            const deliveryAvailable = document.getElementById('bookDeliveryAvailable').checked;
+            const description = document.getElementById('bookDescription').value.trim();
+
+            const imageUrls = imageUrl ? [imageUrl] : [];
+            const payload = {
+                title, authors, price, stockCount, city, genre, condition, status,
+                imageUrls, isNegotiable, deliveryAvailable, description,
+                language: 'AZERBAIJANI'
+            };
+
+            const btn = document.getElementById('bookSubmitBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> Yadda saxlanılır...';
+
+            try {
+                const url = id ? `${API_BASE}/api/books/${id}` : `${API_BASE}/api/books`;
+                const method = id ? 'PUT' : 'POST';
+
+                const res = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || 'Xəta baş verdi');
+
+                closeModal('bookModal');
+                showToast(id ? 'Elan yeniləndi' : 'Yeni elan əlavə edildi', 'success');
+
+                if (currentUser.role === 'STORE') {
+                    await loadStoreDashboard();
+                } else {
+                    await loadMyBooks();
+                    await loadCatalog();
+                }
+            } catch (err) {
+                showToast(err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Yadda Saxla';
+            }
+        }
+
+        async function toggleBookStatus(bookId, newStatus) {
+            try {
+                const res = await fetch(`${API_BASE}/api/books/${bookId}/status?status=${newStatus}`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (!res.ok) throw new Error('Status dəyişdirilə bilmədi');
+                showToast(`Elan statusu: ${newStatus === 'SOLD' ? 'SATILDI' : 'AKTİV'}`, 'info');
+                if (currentUser.role === 'STORE') await loadStoreDashboard();
+                else await loadMyBooks();
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        }
+
+        async function handleDeleteBook(bookId) {
+            if (!confirm('Bu elanı silmək istədiyinizə əminsiniz?')) return;
+            try {
+                const res = await fetch(`${API_BASE}/api/books/${bookId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (!res.ok) throw new Error('Kitab silinə bilmədi');
+                showToast('Elan silindi', 'info');
+                if (currentUser.role === 'STORE') await loadStoreDashboard();
+                else {
+                    await loadMyBooks();
+                    await loadCatalog();
+                }
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        }
+
+        // ======================= MAĞAZALAR =======================
+        async function loadStores() {
+            try {
+                const res = await fetch(`${API_BASE}/api/stores`);
+                if (!res.ok) throw new Error('Mağazalar yüklənmədi');
+                allStoresList = await res.json();
+                renderStoresGrid(allStoresList);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function renderStoresGrid(stores) {
+            const container = document.getElementById('storesGrid');
+            if (!container) return;
+            container.innerHTML = '';
+
+            stores.forEach(s => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-3xl p-6 border border-paper-200 shadow-sm hover:shadow-md transition-all flex flex-col justify-between';
+                card.innerHTML = `
+                    <div class="space-y-3">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-12 h-12 rounded-2xl book-leather-gradient text-amber-400 flex items-center justify-center text-xl font-bold">
+                                <i class="fa-solid fa-store"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-book text-base font-bold text-leather-900">${s.name}</h4>
+                                <span class="text-[10px] font-black text-emerald-700 uppercase bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                                    Rəsmi Mağaza
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="text-xs text-paper-800 space-y-1 pt-2">
+                            <p><i class="fa-solid fa-location-dot text-amber-700 mr-1.5"></i>${s.location || '-'}</p>
+                            <p><i class="fa-solid fa-phone text-amber-700 mr-1.5"></i>${s.phone || '-'}</p>
+                            <p><i class="fa-solid fa-book text-amber-700 mr-1.5"></i>Kitab Sayı: <b>${s.bookCount || 0} ədəd</b></p>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t border-paper-100 mt-4">
+                        <button onclick="openStoreBooksPublicModal(${s.id}, '${s.name.replace(/'/g, "\\'")}')" class="w-full py-2.5 rounded-xl book-gold-gradient text-white text-xs font-black shadow-sm hover:opacity-95 transition">
+                            Kitablarına Bax
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        async function openStoreBooksPublicModal(storeId, storeName) {
+            try {
+                const res = await fetch(`${API_BASE}/api/stores/${storeId}`);
+                if (!res.ok) throw new Error('Mağaza detalları yüklənmədi');
+                const store = await res.json();
+                
+                document.getElementById('adminSummaryModalTitle').textContent = `"${storeName}" Mağazasının Kitabları`;
+                renderAdminBooksSummaryTable(store.books || []);
+                openModal('adminBookSummaryModal');
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        }
+
+        // ======================= ADMIN DASHBOARD =======================
+        async function loadAdminDashboard() {
+            if (!currentUser || currentUser.role !== 'ADMIN') return;
+            try {
+                const statRes = await fetch(`${API_BASE}/api/statistics`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (statRes.ok) {
+                    const stats = await statRes.json();
+                    document.getElementById('statBookCount').textContent = stats.bookCount || 0;
+                    document.getElementById('statCustomerCount').textContent = stats.customerCount || 0;
+                    document.getElementById('statStoreCount').textContent = stats.storeCount || 0;
+                }
+
+                // Mağazalar
+                const storesRes = await fetch(`${API_BASE}/api/stores`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (storesRes.ok) {
+                    const stores = await storesRes.json();
+                    renderAdminStoresTable(stores);
+                }
+
+                // Müştərilər
+                const custRes = await fetch(`${API_BASE}/api/customers`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (custRes.ok) {
+                    const customers = await custRes.json();
+                    renderAdminCustomersTable(customers);
+                }
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        }
+
+        function showAdminTab(tab) {
+            const storesTab = document.getElementById('adminStoresTab');
+            const custTab = document.getElementById('adminCustomersTab');
+            const storesBtn = document.getElementById('adminTabStoresBtn');
+            const custBtn = document.getElementById('adminTabCustomersBtn');
+
+            if (tab === 'stores') {
+                storesTab.classList.remove('hidden');
+                custTab.classList.add('hidden');
+                storesBtn.className = 'text-xs font-black text-amber-800 border-b-2 border-amber-800 pb-2';
+                custBtn.className = 'text-xs font-black text-paper-500 hover:text-leather-900 pb-2';
+            } else {
+                storesTab.classList.add('hidden');
+                custTab.classList.remove('hidden');
+                custBtn.className = 'text-xs font-black text-amber-800 border-b-2 border-amber-800 pb-2';
+                storesBtn.className = 'text-xs font-black text-paper-500 hover:text-leather-900 pb-2';
+            }
+        }
+
+        function renderAdminStoresTable(stores) {
+            const tbody = document.getElementById('adminStoresTableBody');
+            tbody.innerHTML = '';
+
+            stores.forEach(s => {
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-paper-100 hover:bg-paper-50 transition';
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-mono text-paper-400">#${s.id}</td>
+                    <td class="py-3 px-4 font-bold text-leather-900">${s.name}</td>
+                    <td class="py-3 px-4">${s.location || '-'}</td>
+                    <td class="py-3 px-4">${s.phone || '-'}</td>
+                    <td class="py-3 px-4">${s.email || '-'}</td>
+                    <td class="py-3 px-4 text-center font-black text-amber-800 text-sm">${s.bookCount || 0}</td>
+                    <td class="py-3 px-4 text-center">
+                        <button onclick='openAdminBooksSummary("${s.name.replace(/'/g, "\\'")}", ${JSON.stringify(s.books || [])})' class="px-2.5 py-1 rounded-lg bg-amber-100 text-amber-900 hover:bg-amber-200 text-xs font-bold transition">
+                            <i class="fa-solid fa-list mr-1"></i>Kitablar (Ad, Say, Qiymət)
+                        </button>
+                    </td>
+                    <td class="py-3 px-4 text-right">
+                        <button onclick="handleDeleteStore(${s.id})" class="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs font-bold transition">
+                            Sil
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderAdminCustomersTable(customers) {
+            const tbody = document.getElementById('adminCustomersTableBody');
+            tbody.innerHTML = '';
+
+            customers.forEach(c => {
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-paper-100 hover:bg-paper-50 transition';
+                const roleLabel = c.role === 'ADMIN' ? 'Admin' : (c.role === 'STORE' ? 'Mağaza' : 'İstifadəçi');
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-mono text-paper-400">#${c.id}</td>
+                    <td class="py-3 px-4 font-bold text-leather-900">${c.name} ${c.surname || ''}</td>
+                    <td class="py-3 px-4">${c.email}</td>
+                    <td class="py-3 px-4">${c.phone || '-'}</td>
+                    <td class="py-3 px-4 font-bold text-paper-700">${roleLabel}</td>
+                    <td class="py-3 px-4 text-center font-black text-amber-800 text-sm">${c.bookCount || 0}</td>
+                    <td class="py-3 px-4 text-center">
+                        <button onclick='openAdminBooksSummary("${c.name} ${c.surname || ''}", ${JSON.stringify(c.books || [])})' class="px-2.5 py-1 rounded-lg bg-amber-100 text-amber-900 hover:bg-amber-200 text-xs font-bold transition">
+                            <i class="fa-solid fa-list mr-1"></i>Kitablar (Ad, Say, Qiymət)
+                        </button>
+                    </td>
+                    <td class="py-3 px-4 text-right">
+                        ${c.role !== 'ADMIN' ? `
+                            <button onclick="handleDeleteCustomer(${c.id})" class="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs font-bold transition">
+                                Sil
+                            </button>
+                        ` : '<span class="text-paper-400 font-semibold">Qorunur</span>'}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function openAdminBooksSummary(ownerName, books) {
+            document.getElementById('adminSummaryModalTitle').textContent = `"${ownerName}" Kitabları`;
+            renderAdminBooksSummaryTable(books);
+            openModal('adminBookSummaryModal');
+        }
+
+        function renderAdminBooksSummaryTable(books) {
+            const tbody = document.getElementById('adminSummaryTableBody');
+            tbody.innerHTML = '';
+
+            if (!books || books.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-paper-500 font-medium">Bu mağazada/istifadəçidə kitab yoxdur</td></tr>`;
+                return;
+            }
+
+            books.forEach(b => {
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-paper-100';
+                tr.innerHTML = `
+                    <td class="py-2.5 px-3 font-bold text-leather-900">${b.title}</td>
+                    <td class="py-2.5 px-3 text-center font-semibold text-paper-800">${b.stockCount || 1} ədəd</td>
+                    <td class="py-2.5 px-3 text-right font-black text-amber-800">${b.price ? b.price.toFixed(2) : '0.00'} ₼</td>
+                    <td class="py-2.5 px-3 text-center">
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${b.status === 'SOLD' ? 'bg-rose-50 text-rose-700' : 'bg-emerald-50 text-emerald-700'}">
+                            ${b.status === 'SOLD' ? 'SATILDI' : 'AKTİV'}
+                        </span>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function openCreateStoreModal() {
+            if (!currentUser || currentUser.role !== 'ADMIN') {
+                showToast('Yalnız Admin mağaza yarada bilər', 'error');
+                return;
+            }
+            document.getElementById('createStoreForm').reset();
+            openModal('createStoreModal');
+        }
+
+        async function handleCreateStore(e) {
+            e.preventDefault();
+            const name = document.getElementById('storeName').value.trim();
+            const location = document.getElementById('storeLocation').value.trim();
+            const phone = document.getElementById('storePhone').value.trim();
+            const email = document.getElementById('storeEmail').value.trim();
+            const password = document.getElementById('storePassword').value.trim();
+            const btn = document.getElementById('createStoreSubmitBtn');
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> Yaranır və OTP göndərilir...';
+
+            try {
+                const res = await fetch(`${API_BASE}/api/stores`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ name, location, phone, email, password })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || 'Mağaza yaradıla bilmədi');
+
+                closeModal('createStoreModal');
+                showToast(`"${data.name}" mağazası yaradıldı! Təsdiqləmə OTP kodu ${email} ünvanına göndərildi.`, 'success');
+                await loadStores();
+                await loadAdminDashboard();
+            } catch (err) {
+                showToast(err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Mağazanı Yarat (OTP Göndərilsin)';
+            }
+        }
+
+        async function handleDeleteStore(storeId) {
+            if (!confirm('Bu mağazanı silmək istədiyinizə əminsiniz?')) return;
+            try {
+                const res = await fetch(`${API_BASE}/api/stores/${storeId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (!res.ok) throw new Error('Mağaza silinə bilmədi');
+                showToast('Mağaza silindi', 'info');
+                await loadAdminDashboard();
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        }
+
+        async function handleDeleteCustomer(customerId) {
+            if (!confirm('Bu istifadəçini silmək istədiyinizə əminsiniz?')) return;
+            try {
+                const res = await fetch(`${API_BASE}/api/customers/${customerId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (!res.ok) throw new Error('İstifadəçi silinə bilmədi');
+                showToast('İstifadəçi silindi', 'info');
+                await loadAdminDashboard();
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        }
+
+        // ======================= İSTİFADƏÇİ PROFİLİ =======================
+        async function loadUserProfileForm() {
+            try {
+                const res = await fetch(`${API_BASE}/api/customers/me`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (!res.ok) throw new Error('Profil yüklənmədi');
+                const user = await res.json();
+                document.getElementById('profName').value = user.name || '';
+                document.getElementById('profSurname').value = user.surname || '';
+                document.getElementById('profEmail').value = user.email || '';
+                document.getElementById('profPhone').value = user.phone || '';
+                document.getElementById('profPassword').value = '';
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        }
+
+        async function handleUpdateProfile(e) {
+            e.preventDefault();
+            const name = document.getElementById('profName').value.trim();
+            const surname = document.getElementById('profSurname').value.trim();
+            const email = document.getElementById('profEmail').value.trim();
+            const phone = document.getElementById('profPhone').value.trim();
+            const password = document.getElementById('profPassword').value.trim();
+            const btn = document.getElementById('profSubmitBtn');
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> Yadda saxlanılır...';
+
+            try {
+                const res = await fetch(`${API_BASE}/api/customers/me`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ name, surname, email, phone, password })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || 'Məlumatlar saxlanıla bilmədi');
+
+                currentUser = data;
+                renderUserState(currentUser);
+                showToast('Profil məlumatları yeniləndi', 'success');
+            } catch (err) {
+                showToast(err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Məlumatları Yadda Saxla';
+            }
+        }
+
+        // ======================= MODAL VƏ TOAST =======================
+        function openModal(id) {
+            const el = document.getElementById(id);
+            if (el) el.classList.remove('hidden');
+        }
+
+        function closeModal(id) {
+            const el = document.getElementById(id);
+            if (el) el.classList.add('hidden');
+        }
+
+        function openRegisterModal() {
+            document.getElementById('registerStep1').classList.remove('hidden');
+            document.getElementById('registerStep2Otp').classList.add('hidden');
+            document.getElementById('registerForm').reset();
+            openModal('registerModal');
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            const icons = {
+                success: 'fa-circle-check text-emerald-600',
+                error: 'fa-circle-xmark text-rose-600',
+                info: 'fa-circle-info text-amber-700'
+            };
+            const borders = {
+                success: 'border-emerald-300',
+                error: 'border-rose-300',
+                info: 'border-amber-300'
+            };
+            toast.className = `pointer-events-auto bg-white border ${borders[type] || 'border-amber-300'} shadow-2xl rounded-2xl p-4 flex items-center space-x-3 max-w-sm transition-all duration-300 transform translate-x-10 opacity-0`;
+            toast.innerHTML = `
+                <i class="fa-solid ${icons[type] || 'fa-info'} text-xl flex-shrink-0"></i>
+                <div class="text-xs font-bold text-leather-900 leading-snug flex-1">${message}</div>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => { toast.classList.remove('translate-x-10', 'opacity-0'); }, 10);
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-x-10');
+                setTimeout(() => toast.remove(), 300);
+            }, 4500);
+        }
+    </script>
+</body>
+</html>

@@ -21,21 +21,15 @@ public class OtpService {
 
     public void sendOtp(String email) {
 
-        String otp = String.format(
-                "%06d",
-                new Random().nextInt(1000000)
-        );
+        String otp = String.format("%06d", new Random().nextInt(1000000));
 
         OtpVerification verification = new OtpVerification();
 
         verification.setEmail(email);
         verification.setOtp(otp);
-        verification.setExpiresAt(
-                LocalDateTime.now().plusMinutes(5)
-        );
+        verification.setExpiresAt(LocalDateTime.now().plusMinutes(5));
 
         otpVerificationRepo.save(verification);
-
         emailService.sendOtp(email, otp);
     }
 
@@ -54,7 +48,6 @@ public class OtpService {
         }
 
         otpVerificationRepo.deleteById(otp.getId());
-
         return true;
     }
 }

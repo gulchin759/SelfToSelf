@@ -4,6 +4,7 @@ import org.example.shelftoshelf.Dto.Request.BookRequestDto;
 import org.example.shelftoshelf.Dto.Response.BookResponseDto;
 import org.example.shelftoshelf.Entity.Enum.*;
 import org.example.shelftoshelf.Service.BookService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,19 +19,31 @@ public class BookController {
         this.bookService = bookService;
     }
 
-
+    // Bütün kitablar (hamı baxa bilər)
     @GetMapping
     public List<BookResponseDto> allBooks() {
         return bookService.allBooks();
     }
 
+    // Tək bir kitabın detalları
+    @GetMapping("/{id}")
+    public ResponseEntity<BookResponseDto> getBookById(@PathVariable Long id) {
+        return ResponseEntity.ok(bookService.getBookById(id));
+    }
 
+    // İstifadəçinin yalnız öz əlavə etdiyi kitablar
+    @GetMapping("/my-books")
+    public List<BookResponseDto> getMyBooks() {
+        return bookService.getMyBooks();
+    }
+
+    // Yeni kitab əlavə et (Daxil olmuş istifadəçi və ya mağaza)
     @PostMapping
     public BookResponseDto addBook(@RequestBody BookRequestDto requestDto) {
         return bookService.addBook(requestDto);
     }
 
-
+    // Kitabı redaktə et (Yalnız sahibi və ya admin)
     @PutMapping("/{id}")
     public BookResponseDto updateBook(
             @PathVariable Long id,
@@ -38,14 +51,15 @@ public class BookController {
         return bookService.updateBook(id, requestDto);
     }
 
+    // Kitabın statusunu dəyiş (ACTIVE, SOLD, INACTIVE)
     @PutMapping("/{id}/status")
     public BookResponseDto updateBookStatus(
             @PathVariable Long id,
-            @RequestBody BookRequestDto requestDto) {
-        return bookService.updateBookStatus(id, requestDto);
+            @RequestParam BookStatus status) {
+        return bookService.updateBookStatus(id, status);
     }
 
-
+    // Axtarış və filtrləmə
     @GetMapping("/search")
     public List<BookResponseDto> searchBooks(
             @RequestParam(required = false) String title,
@@ -65,18 +79,10 @@ public class BookController {
         );
     }
 
-
+    // Kitab sil (Yalnız sahibi və ya admin)
     @DeleteMapping("/{id}")
-    public void deleteBook(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteBook(@PathVariable Long id) {
         bookService.deleteBook(id);
+        return ResponseEntity.noContent().build();
     }
-
-
-
-
-
-
-
-
-
 }

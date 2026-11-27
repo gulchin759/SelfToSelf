@@ -73,6 +73,8 @@ public class Book {
     @Enumerated(EnumType.STRING)
     private BookStatus status;
 
+
+
     @ManyToOne
     @JoinColumn(name = "customer_id")
     private Customer seller;

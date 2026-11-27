@@ -10,20 +10,21 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-
-
-
-
 @Entity
 public class BookImage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private  Long id;
+    private Long id;
 
+    @Column(length = 1000)
+    private String url;
 
     @ManyToOne
     @JoinColumn(name = "book_id")
-    private  Book book;
+    private Book book;
 
-
+    public BookImage(String url, Book book) {
+        this.url = url;
+        this.book = book;
+    }
 }
